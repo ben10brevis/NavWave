@@ -147,6 +147,7 @@ fun Modifier.clearLiquidGlass(
     interactive: Boolean = true,
     enableStretch: Boolean = false,
     customBlurDp: Dp? = null,
+    tintColor: Color? = null,
     interactionState: GlassInteractionState? = if (interactive) rememberGlassInteractionState() else null,
 ): Modifier {
     val tier = LocalGlassTier.current
@@ -231,9 +232,13 @@ fun Modifier.clearLiquidGlass(
             onDrawSurface = {
                 val press = interactionState?.pressProgress ?: 0f
 
-                // Layer 3: Tint (White 6% dark / Black 4% light with subtle gradient)
-                val baseTint = if (isDark) Color.White else Color.Black
-                val effectiveAlpha = (params.tintAlpha + press * 0.04f).coerceIn(0.02f, 0.20f)
+                // Layer 3: Tint (White 6% dark / Black 4% light with subtle gradient, or artwork tint)
+                val baseTint = tintColor ?: if (isDark) Color.White else Color.Black
+                val effectiveAlpha = if (tintColor != null) {
+                    (0.12f + press * 0.04f).coerceIn(0.04f, 0.25f)
+                } else {
+                    (params.tintAlpha + press * 0.04f).coerceIn(0.02f, 0.20f)
+                }
                 drawRect(
                     brush = Brush.verticalGradient(
                         0f to baseTint.copy(alpha = effectiveAlpha * 1.35f),

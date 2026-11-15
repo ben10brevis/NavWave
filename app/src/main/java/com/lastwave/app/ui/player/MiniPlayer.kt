@@ -2,6 +2,8 @@
 
 package com.lastwave.app.ui.player
 
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.glass.GlassIconButton
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
 import com.lastwave.app.data.playlist.isLikedIn
@@ -457,229 +459,100 @@ internal fun MiniPlayer(
             },
         contentAlignment = Alignment.Center,
     ) {
-        if (isGlass) {
-            Surface(
-                shape = shape,
-                // Transparent card when glass (glass draws scrim), 95% primaryContainer otherwise to match theme color.
-                color = Color.Transparent,
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp,
-                modifier = Modifier.fillMaxWidth().then(
-                    if (backdrop != null) {
-                        Modifier.liquidGlass(backdrop, luminance, shape)
-                    } else Modifier
+        val artworkUrl = track.artworkUrl ?: ""
+        val artworkTint = remember(artworkUrl) {
+            ambientPaletteCache.get(artworkUrl)?.first
+        }
+        val glassShape = CircleShape
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clearLiquidGlass(
+                    shape = glassShape,
+                    customBlurDp = 14.dp,
+                    tintColor = artworkTint,
+                    interactive = true,
                 )
                 .clickable(interactionSource = barInteraction, indication = null, onClick = onExpand),
-            ) {
-                Column(
-                    modifier = if (edgeToEdge) {
-                        Modifier.windowInsetsPadding(
-                            WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
-                        )
-                    } else {
-                        Modifier
-                    },
-                ) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 12.dp)
-                            .collapseVerticalPadding(10.dp, 2.5.dp, compactProgress),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Box(Modifier.collapseSquare(56.dp, 40.dp, compactProgress)) {
-                            Surface(
-                                shape = RoundedCornerShape(18.dp),
-                                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                tonalElevation = 2.dp,
-                                modifier = Modifier.fillMaxSize(),
-                            ) {
-                                PlayerArtwork(
-                                    track = track,
-                                    modifier = Modifier.fillMaxSize(),
-                                    corner = 18.dp,
-                                )
-                            }
-                        }
-                        val miniTitleColor = if (LocalIsDarkTheme.current) Color.White else Color.Black
-                        val miniArtistColor = if (LocalIsDarkTheme.current) Color.White.copy(alpha = 0.7f)
-                            else Color.Black.copy(alpha = 0.7f)
-                        Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
-                            Text(
-                                track.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = miniTitleColor,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.fillMaxWidth().playingMarquee(state.isPlaying && windowActive),
-                            )
-                            Text(
-                                track.artist,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = miniArtistColor,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.fillMaxWidth().playingMarquee(state.isPlaying && windowActive),
-                            )
-                        }
-                        // Inner controls sit plain on the glass card (no nested glass).
-                        Surface(
-                            onClick = onToggle,
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(48.dp).collapseScale(0.85f, compactProgress),
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                if (state.isBuffering) {
-                                    ExpressiveInlineLoadingIndicator(
-                                        size = 24.dp,
-                                        color = androidx.compose.material3.LocalContentColor.current,
-                                        strokeWidth = 2.5.dp,
-                                    )
-                                } else {
-                                    AnimatedPlayPauseIcon(state.isPlaying, Modifier.size(27.dp))
-                                }
-                            }
-                        }
-                        IconButton(
-                            onClick = onNext,
-                            enabled = state.queueSize > 1,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .size(44.dp)
-                                .collapseScale(0.85f, compactProgress)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondaryContainer),
-                        ) {
-                            Icon(
-                                Icons.Filled.SkipNext,
-                                "Next",
-                                tint = if (state.queueSize > 1) MaterialTheme.colorScheme.onSecondaryContainer
-                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                            )
-                        }
-                    }
-                    MiniPlayerProgress(progressState)
-                }
-            }
-        } else {
-            // Material 3 (non-Liquid Glass) Mini-Player
-            val m3ArtworkCornerPercent by animateIntAsState(
-                targetValue = if (state.isPlaying) 50 else 28,
-                animationSpec = ExpressiveMotion.spatialDefault(),
-                label = "m3MiniArtworkCorner",
-            )
-            val m3PlayPauseCornerPercent by animateIntAsState(
-                targetValue = if (state.isPlaying) 32 else 50,
-                animationSpec = ExpressiveMotion.spatialDefault(),
-                label = "m3MiniPlayPauseCorner",
-            )
-
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                tonalElevation = 3.dp,
-                shadowElevation = 6.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .collapseHeight(72.dp, 56.dp, compactProgress)
-                    .clickable(interactionSource = barInteraction, indication = null, onClick = onExpand),
+        ) {
+            Column(
+                modifier = if (edgeToEdge) {
+                    Modifier.windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
+                    )
+                } else {
+                    Modifier
+                },
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(start = 10.dp, end = 14.dp),
+                    Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                        .collapseVerticalPadding(10.dp, 2.5.dp, compactProgress),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    // Concentric Left Geometry: 54.dp artwork nesting inside the 72.dp capsule curve
-                    Box(
-                        modifier = Modifier
-                            .collapseSquare(54.dp, 40.dp, compactProgress)
-                            .clip(RoundedCornerShape(percent = m3ArtworkCornerPercent))
-                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        PlayerArtwork(
-                            track = track,
-                            modifier = Modifier.fillMaxSize(),
-                            corner = 0.dp,
-                        )
-                    }
-
-                    // Typography Hierarchy: 15.sp bold title (-0.2.sp letterSpacing) + 13.sp medium artist (0.78 alpha) + 1.dp space
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 12.dp),
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        Text(
-                            text = track.title,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.2).sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.fillMaxWidth().playingMarquee(state.isPlaying && windowActive),
-                        )
-                        Spacer(Modifier.height(1.dp))
-                        Text(
-                            text = track.artist,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.fillMaxWidth().playingMarquee(state.isPlaying && windowActive),
-                        )
-                    }
-
-                    // Clean solid play/pause button without outer progress indicator
-                    Surface(
-                        onClick = onToggle,
-                        shape = RoundedCornerShape(percent = m3PlayPauseCornerPercent),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(42.dp).collapseScale(0.9f, compactProgress),
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (state.isBuffering) {
-                                ExpressiveInlineLoadingIndicator(
-                                    size = 20.dp,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    strokeWidth = 2.dp,
-                                )
-                            } else {
-                                AnimatedPlayPauseIcon(state.isPlaying, Modifier.size(22.dp))
-                            }
+                    Box(Modifier.collapseSquare(52.dp, 40.dp, compactProgress)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                        ) {
+                            PlayerArtwork(
+                                track = track,
+                                modifier = Modifier.fillMaxSize(),
+                                corner = 14.dp,
+                            )
                         }
                     }
-
-                    // Skip Next IconButton with an outline stroke
+                    val miniTitleColor = if (LocalIsDarkTheme.current) Color.White else Color.Black
+                    val miniArtistColor = if (LocalIsDarkTheme.current) Color.White.copy(alpha = 0.7f)
+                        else Color.Black.copy(alpha = 0.7f)
+                    Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
+                        Text(
+                            track.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = miniTitleColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth().playingMarquee(state.isPlaying && windowActive),
+                        )
+                        Text(
+                            track.artist,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = miniArtistColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth().playingMarquee(state.isPlaying && windowActive),
+                        )
+                    }
+                    GlassIconButton(
+                        onClick = onToggle,
+                        imageVector = if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = if (state.isPlaying) "Pause" else "Play",
+                        size = 46.dp,
+                        iconSize = 24.dp,
+                        modifier = Modifier.collapseScale(0.88f, compactProgress),
+                    )
                     IconButton(
                         onClick = onNext,
                         enabled = state.queueSize > 1,
                         modifier = Modifier
                             .padding(start = 6.dp)
-                            .size(40.dp)
-                            .collapseScale(0.9f, compactProgress)
-                            .border(
-                                width = 1.2.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
-                                shape = CircleShape,
-                            )
+                            .size(42.dp)
+                            .collapseScale(0.85f, compactProgress)
                             .clip(CircleShape),
                     ) {
                         Icon(
                             Icons.Filled.SkipNext,
                             contentDescription = "Next",
-                            modifier = Modifier.size(22.dp),
-                            tint = if (state.queueSize > 1) MaterialTheme.colorScheme.onSurfaceVariant
-                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                            tint = if (state.queueSize > 1) miniTitleColor
+                            else miniTitleColor.copy(alpha = 0.38f),
+                            modifier = Modifier.size(24.dp),
                         )
                     }
                 }
+                MiniPlayerProgress(progressState)
             }
         }
     }

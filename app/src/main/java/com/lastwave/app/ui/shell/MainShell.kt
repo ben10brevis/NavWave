@@ -58,6 +58,14 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LibraryMusic
+import androidx.compose.material.icons.outlined.Search
+import com.lastwave.app.ui.glass.GlassBottomTabBar
+import com.lastwave.app.ui.glass.GlassTabItem
+import com.lastwave.app.ui.search.SearchScreen
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -198,8 +206,8 @@ class MainShellViewModel @Inject constructor(
 }
 
 private enum class MainTab(val labelRes: Int) {
-    FEED(com.lastwave.app.R.string.nav_feed),
-    STATS(com.lastwave.app.R.string.nav_stats),
+    FEED(com.lastwave.app.R.string.nav_home),
+    SEARCH(com.lastwave.app.R.string.nav_search),
     PLAYLISTS(com.lastwave.app.R.string.nav_playlists),
 }
 
@@ -252,6 +260,9 @@ fun MainShell(
     onOpenPodcasts: () -> Unit = {},
     onOpenPodcastShow: (String) -> Unit = {},
     onOpenYouTubeLogin: () -> Unit = {},
+    onOpenArtist: (name: String, browseId: String?) -> Unit = { _, _ -> },
+    onOpenAlbum: (title: String, artist: String, browseId: String?) -> Unit = { _, _, _ -> },
+    onOpenStats: () -> Unit = {},
     onReturnToHome: () -> Boolean = { false },
     mainShellViewModel: MainShellViewModel = hiltViewModel(),
 ) {
@@ -426,7 +437,14 @@ fun MainShell(
                     when (tabs[page]) {
                         MainTab.FEED -> FeedScreen(
                             onOpenSettings = onOpenSettings,
-                            onOpenSearch = onOpenSearch,
+                            onOpenSearch = {
+                                val searchIndex = tabs.indexOf(MainTab.SEARCH)
+                                if (searchIndex >= 0) {
+                                    scope.launch { pagerState.animateScrollToPage(searchIndex) }
+                                } else {
+                                    onOpenSearch()
+                                }
+                            },
                             onOpenDiscover = onOpenDiscover,
                             onOpenPlaylist = onOpenPlaylist,
                             onOpenFeedPlaylist = onOpenFeedPlaylist,
@@ -440,13 +458,15 @@ fun MainShell(
                             onOpenYouTubeLogin = onOpenYouTubeLogin,
                             feedTapEvents = feedTapEvents,
                         )
-                        MainTab.STATS -> HomeScreen(
-                            onOpenSettings = onOpenSettings,
-                            onOpenSearch = onOpenSearch,
-                            onOpenDiscover = onOpenDiscover,
-                            onOpenGenres = onOpenGenres,
-                            onOpenFriends = onOpenFriends,
-                            onOpenDownloads = onOpenDownloads,
+                        MainTab.SEARCH -> SearchScreen(
+                            onBack = { scope.launch { pagerState.animateScrollToPage(feedIndex) } },
+                            onOpenArtist = onOpenArtist,
+                            onOpenAlbum = onOpenAlbum,
+                            onOpenPlaylist = { playlistId ->
+                                onOpenFeedPlaylist(playlistId)
+                            },
+                            showBackButton = false,
+                            autoFocus = false,
                         )
                         MainTab.PLAYLISTS -> PlaylistScreen(
                             onOpenPlaylist = onOpenPlaylist,
@@ -526,46 +546,51 @@ fun MainShell(
             selectLiquidTab(index, refreshIfSelected = false)
         }
 
-        androidx.compose.runtime.DisposableEffect(navigationBackdrop, navigationLiquidState, tabs, hideNavTabs) {
+        androidx.compose.runtime.DisposableEffect(tabs, hideNavTabs) {
             if (!hideNavTabs) {
-                bottomNavSlot.value = { material3NavigationEnabled ->
+                bottomNavSlot.value = { _ ->
                     Box(Modifier.fillMaxSize()) {
                         val collapse = LocalChromeCollapse.current
                         val collapseProgress = collapse?.progress ?: { 0f }
                         val barModifier = Modifier.align(Alignment.BottomCenter).collapsingNavBar(collapseProgress)
-                        val pillModifier = Modifier.align(Alignment.BottomStart).collapsedNavPill(collapseProgress)
-                        val expand = { collapse?.expand(); Unit }
-                        if (navigationLiquidState != null) {
-                            val items = tabs.map { tab ->
-                                LiquidNavigationItem(
-                                    label = androidx.compose.ui.res.stringResource(tab.labelRes),
-                                    icon = tab.icon(),
+
+                        val items = listOf(
+                            GlassTabItem(
+                                title = androidx.compose.ui.res.stringResource(com.lastwave.app.R.string.nav_home),
+                                selectedIcon = Icons.Filled.Home,
+                                unselectedIcon = Icons.Outlined.Home,
+                            ),
+                            GlassTabItem(
+                                title = androidx.compose.ui.res.stringResource(com.lastwave.app.R.string.nav_search),
+                                selectedIcon = Icons.Filled.Search,
+                                unselectedIcon = Icons.Outlined.Search,
+                            ),
+                            GlassTabItem(
+                                title = androidx.compose.ui.res.stringResource(com.lastwave.app.R.string.nav_playlists),
+                                selectedIcon = Icons.Filled.LibraryMusic,
+                                unselectedIcon = Icons.Outlined.LibraryMusic,
+                            ),
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .windowInsetsPadding(
+                                    WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                                 )
-                            }
-                            LiquidNavigationBar(
-                                liquidState = navigationLiquidState,
+                                .padding(bottom = 12.dp)
+                                .then(barModifier),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            GlassBottomTabBar(
                                 items = items,
                                 selectedIndex = currentSelectedIndex,
-                                onSelect = currentOnLiquidSelect,
-                                onScrubSelect = currentOnScrubSelect,
-                                modifier = barModifier,
-                                style = if (material3NavigationEnabled) {
-                                    LiquidNavigationStyle.Material3
-                                } else {
-                                    LiquidNavigationStyle.Tabs
-                                },
+                                onSelectTab = currentOnSelect,
+                                modifier = Modifier
+                                    .widthIn(max = 420.dp)
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
                             )
-                            LiquidNavigationPill(navigationLiquidState, items[currentSelectedIndex], expand, pillModifier)
-                        } else {
-                            FloatingNavBar(
-                                backdrop = navigationBackdrop,
-                                tabs = tabs,
-                                selectedIndex = currentSelectedIndex,
-                                onSelect = currentOnSelect,
-                                onOpenGenerator = currentOnOpenGenerator,
-                                modifier = barModifier,
-                            )
-                            FloatingNavPill(navigationBackdrop, tabs[currentSelectedIndex], expand, pillModifier)
                         }
                     }
                 }
@@ -900,7 +925,7 @@ private fun FloatingNavItem(
 
 private fun MainTab.icon(): ImageVector = when (this) {
     MainTab.FEED -> Icons.Filled.Home
-    MainTab.STATS -> Icons.Filled.Leaderboard
+    MainTab.SEARCH -> Icons.Filled.Search
     MainTab.PLAYLISTS -> Icons.AutoMirrored.Filled.QueueMusic
 }
 

@@ -31,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lastwave.app.data.model.AuthState
 import com.lastwave.app.ui.auth.AuthViewModel
 import com.lastwave.app.ui.auth.LoginScreen
+import com.lastwave.app.ui.home.HomeScreen
 import com.lastwave.app.ui.settings.SettingsScreen
 import com.lastwave.app.ui.glass.GlassLabScreen
 import com.lastwave.app.ui.search.SearchScreen
@@ -325,6 +326,15 @@ fun LastWaveNavHost(
                 onOpenYouTubeLogin = {
                     navController.navigate(Screen.YouTubeLogin.route)
                 },
+                onOpenArtist = { name, browseId ->
+                    navController.navigate(Screen.ArtistDetail.createRoute(name, browseId))
+                },
+                onOpenAlbum = { title, artist, browseId ->
+                    navController.navigate(Screen.AlbumDetail.createRoute(title, artist, browseId))
+                },
+                onOpenStats = {
+                    navController.navigate(Screen.Home.route)
+                },
                 onReturnToHome = {
                     if (navController.currentDestination?.route != Screen.MainShell.route) {
                         navController.popBackStack(Screen.MainShell.route, inclusive = false)
@@ -609,6 +619,19 @@ fun LastWaveNavHost(
         composable(Screen.Discover.route) { backStackEntry ->
             PredictiveBackScreen(onBack = { navController.safePopBackStack(backStackEntry) }) {
                 DiscoverScreen(onBack = { navController.safePopBackStack(backStackEntry) })
+            }
+        }
+
+        composable(Screen.Home.route) { backStackEntry ->
+            PredictiveBackScreen(onBack = { navController.safePopBackStack(backStackEntry) }) {
+                HomeScreen(
+                    onOpenSettings = { navController.navigate(Screen.Settings.route) },
+                    onOpenSearch = { navController.navigate(Screen.Search.createRoute()) },
+                    onOpenDiscover = { navController.navigate(Screen.Discover.route) },
+                    onOpenGenres = { navController.navigate(Screen.Genres.route) },
+                    onOpenFriends = { navController.navigate(Screen.Friends.route) },
+                    onOpenDownloads = { navController.navigate(Screen.Downloads.route) },
+                )
             }
         }
 

@@ -144,6 +144,8 @@ fun SearchScreen(
     onOpenArtist: (name: String, browseId: String?) -> Unit = { _, _ -> },
     onOpenAlbum: (title: String, artist: String, browseId: String?) -> Unit = { _, _, _ -> },
     onOpenPlaylist: (playlistId: String) -> Unit = {},
+    showBackButton: Boolean = true,
+    autoFocus: Boolean = true,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -172,9 +174,11 @@ fun SearchScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
+    LaunchedEffect(autoFocus) {
+        if (autoFocus) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
 
     Box(
@@ -206,8 +210,10 @@ fun SearchScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    HeaderActionIcon(Icons.AutoMirrored.Filled.ArrowBack, "Back", onBack)
-                    Spacer(Modifier.width(10.dp))
+                    if (showBackButton) {
+                        HeaderActionIcon(Icons.AutoMirrored.Filled.ArrowBack, "Back", onBack)
+                        Spacer(Modifier.width(10.dp))
+                    }
 
                     val pillBg = MaterialTheme.colorScheme.surfaceContainerHighest
 

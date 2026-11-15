@@ -2,6 +2,7 @@ package com.lastwave.app.ui.glass
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -89,12 +90,22 @@ fun GlassBottomTabBar(
         val tabWidthPx = (constraints.maxWidth.toFloat() - 8f) / count
         val tabWidthDp = (maxWidth - 8.dp) / count
 
-        // Liquid Selection Bubble
+        // Liquid Selection Bubble with dynamic liquid stretch
+        val delta = if (bubblePosition.isRunning) {
+            bubblePosition.targetValue - bubblePosition.value
+        } else 0f
+        val stretchX = 1f + (kotlin.math.abs(delta) * 0.12f).coerceAtMost(0.18f)
+        val squashY = 1f - (kotlin.math.abs(delta) * 0.06f).coerceAtMost(0.09f)
+
         Box(
             modifier = Modifier
                 .offset { IntOffset((bubblePosition.value * tabWidthPx).roundToInt(), 0) }
                 .width(tabWidthDp)
                 .fillMaxHeight()
+                .graphicsLayer {
+                    scaleX = stretchX
+                    scaleY = squashY
+                }
                 .clearLiquidGlass(
                     shape = CircleShape,
                     interactive = false,
