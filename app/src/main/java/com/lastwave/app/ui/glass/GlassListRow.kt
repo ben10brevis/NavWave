@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lastwave.app.ui.theme.LocalIsDarkTheme
 
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
+
 /**
  * Clear Liquid Glass List Row.
  * Used for tracks, albums, search results, and settings menu rows.
@@ -38,7 +42,17 @@ fun GlassListRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
-    leadingContent: (@Composable () -> Unit)? = null,
+    leadingIcon: ImageVector? = null,
+    leadingContent: (@Composable () -> Unit)? = leadingIcon?.let { icon ->
+        {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+    },
     trailingContent: (@Composable () -> Unit)? = null,
     shape: Shape = RoundedCornerShape(20.dp),
     enabled: Boolean = true,

@@ -22,6 +22,26 @@ import com.lastwave.app.ui.theme.LocalIsDarkTheme
 import kotlin.math.cos
 import kotlin.math.sin
 
+@Composable
+fun DynamicMeshBackground(
+    artworkColors: List<Color>,
+    modifier: Modifier = Modifier,
+    isPureBlack: Boolean = false,
+    content: @Composable () -> Unit = {},
+) {
+    val primary = artworkColors.getOrNull(0) ?: MaterialTheme.colorScheme.primary
+    val secondary = artworkColors.getOrNull(1) ?: MaterialTheme.colorScheme.tertiary
+    val accent = artworkColors.getOrNull(2) ?: MaterialTheme.colorScheme.secondary
+    DynamicMeshBackground(
+        modifier = modifier,
+        primaryColor = primary,
+        secondaryColor = secondary,
+        accentColor = accent,
+        isPureBlack = isPureBlack,
+        content = content,
+    )
+}
+
 /**
  * Animated dynamic mesh gradient background.
  * Drifts 3-4 blurred color blobs (20-30s loops) extracted from artwork

@@ -28,6 +28,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lastwave.app.ui.theme.LocalIsDarkTheme
 
+enum class GlassButtonVariant {
+    FILLED,
+    TONAL,
+    OUTLINED,
+    TEXT,
+    Primary,
+    Secondary,
+    Ghost,
+}
+
 /**
  * Capsule Clear Liquid Glass Button.
  * Replaces Material 3 FilledButton, FilledTonalButton, OutlinedButton.
@@ -38,6 +48,8 @@ fun GlassButton(
     modifier: Modifier = Modifier,
     shape: Shape = CircleShape,
     enabled: Boolean = true,
+    variant: GlassButtonVariant = GlassButtonVariant.FILLED,
+    tintColor: Color? = null,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     content: @Composable RowScope.() -> Unit,
@@ -45,7 +57,11 @@ fun GlassButton(
     val haptic = LocalHapticFeedback.current
     val interactionState = rememberGlassInteractionState()
     val isDark = LocalIsDarkTheme.current
-    val contentColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
+    val effectiveTint = tintColor ?: when (variant) {
+        GlassButtonVariant.FILLED, GlassButtonVariant.Primary -> MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
+        GlassButtonVariant.TONAL, GlassButtonVariant.Secondary -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f)
+        GlassButtonVariant.OUTLINED, GlassButtonVariant.TEXT, GlassButtonVariant.Ghost -> null
+    }
 
     Box(
         modifier = modifier
@@ -54,6 +70,7 @@ fun GlassButton(
                 shape = shape,
                 interactive = enabled,
                 interactionState = if (enabled) interactionState else null,
+                tintColor = effectiveTint,
             )
             .clickable(
                 enabled = enabled,
@@ -88,7 +105,18 @@ fun GlassButton(
     modifier: Modifier = Modifier,
     shape: Shape = CircleShape,
     enabled: Boolean = true,
-    leadingIcon: (@Composable () -> Unit)? = null,
+    variant: GlassButtonVariant = GlassButtonVariant.FILLED,
+    tintColor: Color? = null,
+    icon: ImageVector? = null,
+    leadingIcon: (@Composable () -> Unit)? = icon?.let { vec ->
+        {
+            Icon(
+                imageVector = vec,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    },
 ) {
     val isDark = LocalIsDarkTheme.current
     GlassButton(
@@ -96,6 +124,8 @@ fun GlassButton(
         modifier = modifier,
         shape = shape,
         enabled = enabled,
+        variant = variant,
+        tintColor = tintColor,
         leadingIcon = leadingIcon,
     ) {
         Text(
@@ -121,10 +151,12 @@ fun GlassIconButton(
     tint: Color = if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface,
     contentDescription: String? = null,
     imageVector: ImageVector? = null,
+    icon: ImageVector? = imageVector,
     painter: Painter? = null,
 ) {
     val haptic = LocalHapticFeedback.current
     val interactionState = rememberGlassInteractionState()
+    val effectiveVector = icon ?: imageVector
 
     Box(
         modifier = modifier
@@ -145,9 +177,9 @@ fun GlassIconButton(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        if (imageVector != null) {
+        if (effectiveVector != null) {
             Icon(
-                imageVector = imageVector,
+                imageVector = effectiveVector,
                 contentDescription = contentDescription,
                 tint = tint,
                 modifier = Modifier.size(iconSize),
@@ -161,4 +193,30 @@ fun GlassIconButton(
             )
         }
     }
+}
+
+/** Convenience overload where icon/imageVector is passed as a positional or named parameter */
+@Composable
+fun GlassIconButton(
+    icon: ImageVector,
+    contentDescription: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    size: Dp = 48.dp,
+    iconSize: Dp = 24.dp,
+    shape: Shape = CircleShape,
+    enabled: Boolean = true,
+    tint: Color = if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface,
+) {
+    GlassIconButton(
+        onClick = onClick,
+        modifier = modifier,
+        size = size,
+        iconSize = iconSize,
+        shape = shape,
+        enabled = enabled,
+        tint = tint,
+        contentDescription = contentDescription,
+        imageVector = icon,
+    )
 }

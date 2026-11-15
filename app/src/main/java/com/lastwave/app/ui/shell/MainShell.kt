@@ -456,6 +456,7 @@ fun MainShell(
                             onOpenPodcasts = onOpenPodcasts,
                             onOpenPodcastShow = onOpenPodcastShow,
                             onOpenYouTubeLogin = onOpenYouTubeLogin,
+                            onOpenStats = onOpenStats,
                             feedTapEvents = feedTapEvents,
                         )
                         MainTab.SEARCH -> SearchScreen(

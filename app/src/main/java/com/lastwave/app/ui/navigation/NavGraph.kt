@@ -274,6 +274,9 @@ fun LastWaveNavHost(
                 onContinueAsGuest = {
                     authViewModel.continueAsGuest()
                 },
+                onLoginWithSpotify = {
+                    navController.navigate(Screen.SpotifyLogin.route)
+                },
                 onRestoreBackupAndSignIn = authViewModel::restoreBackupOnly,
                 onDismissError = authViewModel::dismissError,
                 errorMessage = restoreError,

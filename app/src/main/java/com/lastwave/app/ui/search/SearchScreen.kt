@@ -5,6 +5,10 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.speech.RecognizerIntent
 import android.widget.Toast
+import com.lastwave.app.ui.glass.GlassCard
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import androidx.compose.ui.graphics.Brush
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
@@ -120,7 +124,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 
 
@@ -192,9 +195,11 @@ fun SearchScreen(
         ) {
         Surface(
             shape = SearchHeaderShape,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = 2.dp,
-            modifier = Modifier.fillMaxWidth(),
+            color = Color.Transparent,
+            tonalElevation = 0.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clearLiquidGlass(shape = SearchHeaderShape, customBlurDp = 14.dp),
         ) {
             Column(
                 modifier = Modifier
@@ -249,8 +254,7 @@ fun SearchScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .clip(CircleShape)
-                                    .background(pillBg)
+                                    .clearLiquidGlass(shape = CircleShape, customBlurDp = 10.dp)
                                     .padding(horizontal = 14.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -496,40 +500,43 @@ fun SearchScreen(
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(bottom = 12.dp),
+                                    modifier = Modifier.padding(bottom = 14.dp),
                                 ) {
                                     Icon(
                                         Icons.Filled.Explore,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(18.dp),
+                                        modifier = Modifier.size(20.dp),
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     Text(
-                                        stringResource(R.string.search_explore),
-                                        style = MaterialTheme.typography.titleSmall,
+                                        "Browse all",
+                                        style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                     )
                                 }
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    EXPLORE_GENRES.forEach { genre ->
-                                        AssistChip(
-                                            onClick = {
-                                                focusManager.clearFocus()
-                                                viewModel.executeSearch(genre)
-                                            },
-                                            label = { Text(genre, style = MaterialTheme.typography.labelLarge) },
-                                            colors = AssistChipDefaults.assistChipColors(
-                                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                                labelColor = MaterialTheme.colorScheme.onSurface,
-                                            ),
-                                            shape = RoundedCornerShape(12.dp),
-                                        )
+                                val chunked = EXPLORE_GENRES.chunked(2)
+                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    chunked.forEach { rowGenres ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        ) {
+                                            rowGenres.forEach { genre ->
+                                                SpotifyBrowseCategoryTile(
+                                                    category = genre,
+                                                    onClick = {
+                                                        focusManager.clearFocus()
+                                                        viewModel.executeSearch(genre)
+                                                    },
+                                                    modifier = Modifier.weight(1f),
+                                                )
+                                            }
+                                            if (rowGenres.size == 1) {
+                                                Spacer(Modifier.weight(1f))
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -686,6 +693,58 @@ fun SearchScreen(
 /** Featured Top Result Card styled after YouTube Music hero cards. */
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
+private fun SpotifyBrowseCategoryTile(
+    category: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val gradientColors = remember(category) {
+        when (category.lowercase()) {
+            "pop" -> listOf(Color(0xFFFF4081), Color(0xFFC2185B))
+            "rock" -> listOf(Color(0xFFE53935), Color(0xFF880E4F))
+            "hip-hop" -> listOf(Color(0xFFFF9800), Color(0xFFE65100))
+            "lo-fi" -> listOf(Color(0xFF7E57C2), Color(0xFF311B92))
+            "electronic" -> listOf(Color(0xFF00E5FF), Color(0xFF0D47A1))
+            "indie" -> listOf(Color(0xFF26A69A), Color(0xFF004D40))
+            "r&b" -> listOf(Color(0xFFAB47BC), Color(0xFF4A148C))
+            "bollywood" -> listOf(Color(0xFFFF7043), Color(0xFFBF360C))
+            "jazz" -> listOf(Color(0xFF5D4037), Color(0xFF3E2723))
+            "metal" -> listOf(Color(0xFF424242), Color(0xFF212121))
+            "acoustic" -> listOf(Color(0xFF8D6E63), Color(0xFF4E342E))
+            "chill" -> listOf(Color(0xFF42A5F5), Color(0xFF1565C0))
+            "anime" -> listOf(Color(0xFFFF5252), Color(0xFFC51162))
+            "classical" -> listOf(Color(0xFF78909C), Color(0xFF263238))
+            "synthwave" -> listOf(Color(0xFFEC407A), Color(0xFF7B1FA2))
+            else -> listOf(Color(0xFF5C6BC0), Color(0xFF1A237E))
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .height(84.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Brush.linearGradient(gradientColors))
+            .clearLiquidGlass(
+                shape = RoundedCornerShape(16.dp),
+                interactive = true,
+                customBlurDp = 6.dp,
+            )
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        contentAlignment = Alignment.TopStart,
+    ) {
+        Text(
+            text = category,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+            ),
+            color = Color.White,
+        )
+    }
+}
+
+@Composable
 private fun TopResultCard(
     item: SearchResultItem,
     tab: SearchTab,
@@ -694,33 +753,12 @@ private fun TopResultCard(
     onLongClick: (() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(20.dp)
-    val containerColor = if (isPlaying) {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.65f)
-    }
-    val cardContentColor = MaterialTheme.colorScheme.onSurface
-    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
-    Card(
+    GlassCard(
         shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = cardContentColor,
-        ),
+        onClick = onPlay,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-            .combinedClickable(
-                onClick = onPlay,
-                onLongClick = onLongClick?.let { action ->
-                    {
-                        haptics.performHapticFeedback(
-                            androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress,
-                        )
-                        action()
-                    }
-                },
-            ),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         Row(
             modifier = Modifier
@@ -1109,38 +1147,11 @@ private fun SearchFilterPills(
     ) {
         tabs.forEach { (tab, labelRes) ->
             val selected = selectedTab == tab
-            val interactionSource = remember { MutableInteractionSource() }
-
-            val pillBg = when {
-                selected -> MaterialTheme.colorScheme.primary
-                else -> MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.60f)
-            }
-
-            val contentColor = when {
-                selected -> MaterialTheme.colorScheme.onPrimary
-                else -> MaterialTheme.colorScheme.onSurfaceVariant
-            }
-
-            Surface(
-                shape = CircleShape,
-                color = pillBg,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = { onTabSelected(tab) },
-                    ),
-            ) {
-                Text(
-                    text = stringResource(labelRes),
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    ),
-                    color = contentColor,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp),
-                )
-            }
+            GlassChip(
+                text = stringResource(labelRes),
+                selected = selected,
+                onClick = { onTabSelected(tab) },
+            )
         }
     }
 }

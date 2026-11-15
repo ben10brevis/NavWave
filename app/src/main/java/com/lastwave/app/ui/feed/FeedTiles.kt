@@ -1,6 +1,8 @@
 package com.lastwave.app.ui.feed
 
 import androidx.activity.compose.BackHandler
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.clearLiquidGlass
 import com.lastwave.app.playback.toPlayableTrack
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.foundation.BorderStroke
@@ -431,95 +433,37 @@ internal fun PinnedChipsBar(
     if (chips.isEmpty()) return
     val haptics = LocalHapticFeedback.current
 
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    LazyRow(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // 1. (All) button chip at index 0
-            item(key = "chip_all") {
-                val isAllSelected = selectedChip == null
-                val bgColor by androidx.compose.animation.animateColorAsState(
-                    targetValue = if (isAllSelected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
-                    label = "allTabBg",
-                )
-                val textColor by androidx.compose.animation.animateColorAsState(
-                    targetValue = if (isAllSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                    label = "allTabText",
-                )
+        // "All" filter chip
+        item(key = "chip_all") {
+            val isAllSelected = selectedChip == null
+            GlassChip(
+                text = "All",
+                selected = isAllSelected,
+                onClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onChipClick(null)
+                },
+            )
+        }
 
-                Surface(
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        onChipClick(null)
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    color = bgColor,
-                    modifier = Modifier.height(38.dp),
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(horizontal = 16.dp),
-                    ) {
-                        Text(
-                            text = "All",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isAllSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = textColor,
-                            maxLines = 1,
-                        )
-                    }
-                }
-            }
-
-            // 2. The mood / activity chips
-            items(chips, key = { it.title }, contentType = { "filter_chip" }) { chip ->
-                val isSelected = selectedChip == chip || selectedChip?.title.equals(chip.title, ignoreCase = true)
-                val bgColor by androidx.compose.animation.animateColorAsState(
-                    targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
-                    label = "tabBg",
-                )
-                val textColor by androidx.compose.animation.animateColorAsState(
-                    targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                    label = "tabText",
-                )
-
-                Surface(
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        onChipClick(chip)
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    color = bgColor,
-                    modifier = Modifier.height(38.dp),
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(horizontal = 14.dp),
-                    ) {
-                        Text(
-                            text = chip.title,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = textColor,
-                            maxLines = 1,
-                        )
-                    }
-                }
-            }
+        // Mood / genre filter chips
+        items(chips, key = { it.title }, contentType = { "filter_chip" }) { chip ->
+            val isSelected = selectedChip == chip || selectedChip?.title.equals(chip.title, ignoreCase = true)
+            GlassChip(
+                text = chip.title,
+                selected = isSelected,
+                onClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onChipClick(chip)
+                },
+            )
         }
     }
 }
@@ -529,20 +473,30 @@ internal fun QuickTilesGrid(
     tiles: List<FeedQuickTile>,
     onTileClick: (FeedQuickTile) -> Unit,
 ) {
-    androidx.compose.foundation.lazy.LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    val displayTiles = tiles.take(6)
+    val chunked = displayTiles.chunked(2)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(
-            items = tiles,
-            key = { "tile_${it.title}_${it.collection}" },
-            contentType = { "quick_tile" },
-        ) { tile ->
-            QuickTileCard(
-                tile = tile,
-                onClick = { onTileClick(tile) },
-            )
+        chunked.forEach { rowTiles ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                rowTiles.forEach { tile ->
+                    QuickTileCard(
+                        tile = tile,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onTileClick(tile) },
+                    )
+                }
+                if (rowTiles.size == 1) {
+                    Spacer(Modifier.weight(1f))
+                }
+            }
         }
     }
 }
@@ -553,9 +507,8 @@ internal fun QuickTileCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val tileShape = RoundedCornerShape(18.dp)
+    val tileShape = RoundedCornerShape(12.dp)
 
-    // Per-type vibrant gradient pairs for the artwork/icon box matching modern expressive designs
     val isYtLikedTile = tile.collection == "yt_liked" || tile.playlistId == "yt_liked"
     val isLocalLikedTile = tile.isLiked && !isYtLikedTile
     val isLikedTile = isYtLikedTile || isLocalLikedTile
@@ -566,19 +519,19 @@ internal fun QuickTileCard(
 
     val iconGradient = when {
         isLikedTile -> Brush.linearGradient(
-            colors = listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.primary),
+            colors = listOf(Color(0xFF4318FF), Color(0xFF1DB954)),
         )
         isMixTile -> Brush.linearGradient(
-            colors = listOf(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.secondary),
+            colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0)),
         )
         isMyMixTile -> Brush.linearGradient(
-            colors = listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)),
+            colors = listOf(Color(0xFF3F51B5), Color(0xFF2196F3)),
         )
         isDiscoverTile -> Brush.linearGradient(
-            colors = listOf(MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.tertiary),
+            colors = listOf(Color(0xFFFF9800), Color(0xFFFF5722)),
         )
         isNewReleasesTile -> Brush.linearGradient(
-            colors = listOf(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.error),
+            colors = listOf(Color(0xFFF44336), Color(0xFFE91E63)),
         )
         else -> Brush.linearGradient(
             colors = listOf(
@@ -588,81 +541,28 @@ internal fun QuickTileCard(
         )
     }
 
-    Surface(
-        onClick = onClick,
-        shape = tileShape,
-        color = when {
-            isLikedTile -> MaterialTheme.colorScheme.primaryContainer
-            isMixTile -> MaterialTheme.colorScheme.secondaryContainer
-            isMyMixTile -> MaterialTheme.colorScheme.surfaceVariant
-            isDiscoverTile -> MaterialTheme.colorScheme.tertiaryContainer
-            isNewReleasesTile -> MaterialTheme.colorScheme.errorContainer
-            else -> MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.75f)
-        },
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.10f),
-        ),
+    Box(
         modifier = modifier
-            .width(136.dp),
+            .height(56.dp)
+            .clearLiquidGlass(
+                shape = tileShape,
+                interactive = true,
+                customBlurDp = 10.dp,
+            )
+            .clickable(onClick = onClick),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(14.dp))
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                     .background(iconGradient),
                 contentAlignment = Alignment.Center,
             ) {
-                if (isYtLikedTile) {
-                    Icon(
-                        Icons.Filled.ThumbUp,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(36.dp),
-                    )
-                } else if (isLocalLikedTile) {
-                    Icon(
-                        Icons.Filled.Favorite,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(36.dp),
-                    )
-                } else if (isMixTile) {
-                    Icon(
-                        Icons.Filled.AutoAwesome,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(36.dp),
-                    )
-                } else if (isMyMixTile) {
-                    Icon(
-                        Icons.Filled.AllInclusive,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(36.dp),
-                    )
-                } else if (isDiscoverTile) {
-                    Icon(
-                        Icons.Filled.Explore,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                        modifier = Modifier.size(36.dp),
-                    )
-                } else if (isNewReleasesTile) {
-                    Icon(
-                        Icons.Filled.NewReleases,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.size(36.dp),
-                    )
-                } else {
+                if (!tile.artworkUrl.isNullOrBlank()) {
                     ArtworkImage(
                         name = tile.title,
                         artist = tile.subtitle ?: "",
@@ -670,40 +570,72 @@ internal fun QuickTileCard(
                         fallbackIcon = Icons.Filled.Album,
                         modifier = Modifier.fillMaxSize(),
                     )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp, start = 2.dp, end = 2.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = tile.title,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 13.sp,
-                        lineHeight = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                val finalSubtitle = if (isNewReleasesTile) "Fresh drops" else tile.subtitle ?: if (tile.actionVideoId != null) "Track" else "Playlist"
-                if (finalSubtitle.isNotEmpty()) {
-                    Text(
-                        text = finalSubtitle,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 11.sp,
-                            lineHeight = 14.sp,
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                } else if (isYtLikedTile) {
+                    Icon(
+                        Icons.Filled.ThumbUp,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
+                } else if (isLocalLikedTile) {
+                    Icon(
+                        Icons.Filled.Favorite,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
+                } else if (isMixTile) {
+                    Icon(
+                        Icons.Filled.AutoAwesome,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
+                } else if (isMyMixTile) {
+                    Icon(
+                        Icons.Filled.AllInclusive,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
+                } else if (isDiscoverTile) {
+                    Icon(
+                        Icons.Filled.Explore,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
+                } else if (isNewReleasesTile) {
+                    Icon(
+                        Icons.Filled.NewReleases,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
+                } else {
+                    Icon(
+                        Icons.Filled.MusicNote,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             }
+
+            Text(
+                text = tile.title,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    lineHeight = 16.sp,
+                ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 10.dp),
+            )
         }
     }
 }

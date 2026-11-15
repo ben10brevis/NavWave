@@ -57,6 +57,12 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Mic
 import com.lastwave.app.data.music.toYouTubeMusicTrack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Leaderboard
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.GlassListRow
+import com.lastwave.app.ui.glass.GlassProgressLoader
+import com.lastwave.app.ui.glass.clearLiquidGlass
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
@@ -195,11 +201,13 @@ fun FeedScreen(
     onOpenPodcasts: () -> Unit = {},
     onOpenPodcastShow: (String) -> Unit = {},
     onOpenYouTubeLogin: () -> Unit = {},
+    onOpenStats: () -> Unit = {},
     feedTapEvents: SharedFlow<Unit>? = null,
     viewModel: FeedViewModel = hiltViewModel(),
     artistAlbumNavigator: ArtistAlbumNavigator = hiltViewModel<ArtistAlbumNavBridgeFeed>().navigator,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var showAccountDrawer by remember { mutableStateOf(false) }
     BackHandler(enabled = state.selectedChip != null) {
         viewModel.selectChip(null)
     }
@@ -379,13 +387,18 @@ fun FeedScreen(
                 onRefresh = viewModel::refresh,
                 state = pullState,
                 indicator = {
-                    androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
-                        state = pullState,
-                        isRefreshing = state.isRefreshing,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = listTopInset),
-                    )
+                    if (pullState.distanceFraction > 0f || state.isRefreshing) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = listTopInset + 12.dp)
+                                .size(48.dp)
+                                .clearLiquidGlass(shape = CircleShape, customBlurDp = 10.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            GlassProgressLoader(size = 28.dp)
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxSize()
@@ -1576,7 +1589,7 @@ fun FeedScreen(
                 actions = {
                     HeaderActionIcon(Icons.Filled.Search, "Search", onOpenSearch)
                     com.lastwave.app.ui.recognition.MusicRecognitionButton(key = "recognition_feed")
-                    IconButton(onClick = onOpenSettings) {
+                    IconButton(onClick = { showAccountDrawer = true }) {
                         com.lastwave.app.ui.home.ProfileAvatar(avatarUrl = state.avatarUrl, modifier = Modifier.size(38.dp))
                     }
                 },
@@ -1707,5 +1720,85 @@ fun FeedScreen(
                 }
             },
         )
+    }
+
+    if (showAccountDrawer) {
+        GlassBottomSheet(
+            onDismissRequest = { showAccountDrawer = false },
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                ) {
+                    com.lastwave.app.ui.home.ProfileAvatar(avatarUrl = state.avatarUrl, modifier = Modifier.size(54.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Your Profile",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = "Listening stats, releases & settings",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                GlassListRow(
+                    title = "Listening Stats & Charts",
+                    subtitle = "Top artists, tracks, and listening history",
+                    leadingIcon = Icons.Filled.Leaderboard,
+                    onClick = {
+                        showAccountDrawer = false
+                        onOpenStats()
+                    },
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                GlassListRow(
+                    title = "What's New",
+                    subtitle = "Latest releases and updates",
+                    leadingIcon = Icons.Filled.NewReleases,
+                    onClick = {
+                        showAccountDrawer = false
+                        onOpenNewReleases()
+                    },
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                GlassListRow(
+                    title = "Settings and Privacy",
+                    subtitle = "Audio engine, EQ, themes, and accounts",
+                    leadingIcon = Icons.Filled.Settings,
+                    onClick = {
+                        showAccountDrawer = false
+                        onOpenSettings()
+                    },
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                GlassListRow(
+                    title = "Downloads",
+                    subtitle = "Manage offline songs and storage",
+                    leadingIcon = Icons.Filled.Download,
+                    onClick = {
+                        showAccountDrawer = false
+                        onOpenDownloads()
+                    },
+                )
+
+                Spacer(Modifier.height(24.dp))
+            }
+        }
     }
 }
