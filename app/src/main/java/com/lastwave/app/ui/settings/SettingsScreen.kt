@@ -376,6 +376,7 @@ fun SettingsScreen(
     onOpenSpotifyLogin: () -> Unit = {},
     onOpenSpotifyTokenImport: () -> Unit = {},
     onOpenJam: () -> Unit = {},
+    onOpenGlassLab: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
     jamViewModel: LastWaveJamViewModel = hiltViewModel(),
 ) {
@@ -2289,6 +2290,7 @@ fun SettingsScreen(
                     AboutCard(
                         versionName = appVersionName(context),
                         appIcon = theme?.appIcon ?: AppIcon.DEFAULT,
+                        onOpenGlassLab = onOpenGlassLab,
                     )
 
                     SettingsActionCard(

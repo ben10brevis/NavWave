@@ -585,8 +585,10 @@ internal fun MoreFromUsCard(
 internal fun AboutCard(
     versionName: String,
     appIcon: AppIcon = AppIcon.DEFAULT,
+    onOpenGlassLab: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    var versionTapCount by remember { androidx.compose.runtime.mutableIntStateOf(0) }
     Card(
         shape = CardOuterShape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
@@ -625,6 +627,17 @@ internal fun AboutCard(
             Surface(
                 shape = ExpressivePillShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
+                onClick = {
+                    versionTapCount++
+                    if (versionTapCount >= 7) {
+                        versionTapCount = 0
+                        android.widget.Toast.makeText(context, "Entering Clear Liquid Glass Lab", android.widget.Toast.LENGTH_SHORT).show()
+                        onOpenGlassLab()
+                    } else if (versionTapCount >= 3) {
+                        val steps = 7 - versionTapCount
+                        android.widget.Toast.makeText(context, "You are $steps steps away from Glass Lab", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                },
             ) {
                 Text(
                     "Version $versionName",

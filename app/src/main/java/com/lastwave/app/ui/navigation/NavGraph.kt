@@ -32,6 +32,7 @@ import com.lastwave.app.data.model.AuthState
 import com.lastwave.app.ui.auth.AuthViewModel
 import com.lastwave.app.ui.auth.LoginScreen
 import com.lastwave.app.ui.settings.SettingsScreen
+import com.lastwave.app.ui.glass.GlassLabScreen
 import com.lastwave.app.ui.search.SearchScreen
 import com.lastwave.app.ui.discover.DiscoverScreen
 import com.lastwave.app.ui.genres.GenresScreen
@@ -457,6 +458,15 @@ fun LastWaveNavHost(
                     onOpenSpotifyTokenImport = { navController.navigate(Screen.SpotifyTokenImport.route) },
                     onOpenExternalImport = { navController.navigate(Screen.ExternalPlaylistImport.route) },
                     onOpenJam = { navController.navigate(Screen.Jam.createRoute()) },
+                    onOpenGlassLab = { navController.navigate(Screen.GlassLab.route) },
+                )
+            }
+        }
+
+        composable(Screen.GlassLab.route) { backStackEntry ->
+            PredictiveBackScreen(onBack = { navController.safePopBackStack(backStackEntry) }) {
+                GlassLabScreen(
+                    onBack = { navController.safePopBackStack(backStackEntry) },
                 )
             }
         }

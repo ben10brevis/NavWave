@@ -23,6 +23,7 @@ sealed class Screen(val route: String) {
         fun createRoute(query: String = "") = if (query.isBlank()) "search" else "search?q=${encodeArg(query)}"
     }
     data object Settings : Screen("settings")
+    data object GlassLab : Screen("glass_lab")
     data object Storage : Screen("storage")
     data object Friends : Screen("friends")
     data object Downloads : Screen("downloads")
