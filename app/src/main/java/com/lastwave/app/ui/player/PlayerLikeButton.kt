@@ -7,6 +7,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
@@ -31,16 +32,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lastwave.app.ui.common.ExpressiveMotion
-import com.lastwave.app.ui.theme.LiquidGlassPreset
-import com.lastwave.app.ui.theme.LiquidGlassSurface
-import com.lastwave.app.ui.theme.LocalLiquidGlass
-import com.lastwave.app.ui.theme.liquidGlassChrome
-import com.lastwave.app.ui.theme.liquidGlassContainerColor
+import com.lastwave.app.ui.glass.clearLiquidGlass
 
-private val LikedColor = Color(0xFFE91E63) // Vibrant pink-red
+private val LikedColor = Color(0xFF1DB954) // Vibrant Spotify green
 private val UnlikedColor = Color.White.copy(alpha = 0.85f)
-private val LikedBg = Color.White.copy(alpha = 0.92f)
-private val UnlikedBg = Color.White.copy(alpha = 0.14f)
 
 @Composable
 internal fun PlayerLikeButton(
@@ -80,34 +75,19 @@ internal fun PlayerLikeButton(
         label = "heartFill",
     )
 
-    val background by animateColorAsState(
-        targetValue = if (liked) LikedBg else UnlikedBg,
-        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
-        label = "heartBackground",
-    )
-
-    val foreground by animateColorAsState(
-        targetValue = if (liked) LikedColor else UnlikedColor,
-        animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
-        label = "heartForeground",
-    )
-
-    LiquidGlassSurface(
-        glassModifier = Modifier.liquidGlassChrome(
-            CircleShape,
-            LocalLiquidGlass.current,
-            LiquidGlassPreset.PlayerControls,
-            interactionSource = interaction,
-        ),
-        onClick = onClick,
-        interactionSource = interaction,
-        shape = CircleShape,
-        color = liquidGlassContainerColor(background),
-        contentColor = foreground,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
+    Box(
         modifier = modifier
             .size(size)
+            .clearLiquidGlass(
+                shape = CircleShape,
+                interactive = true,
+                tintColor = if (liked) LikedColor.copy(alpha = 0.18f) else null,
+            )
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = onClick,
+            )
             .semantics {
                 selected = liked
                 contentDescription = if (liked) "Unlike song" else "Like song"
@@ -116,6 +96,7 @@ internal fun PlayerLikeButton(
                 scaleX = pressScale
                 scaleY = pressScale
             },
+        contentAlignment = Alignment.Center,
     ) {
         val iconSize = size * 0.52f
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

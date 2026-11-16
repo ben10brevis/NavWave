@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -25,6 +26,7 @@ fun GlassCard(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(28.dp),
     contentPadding: Dp = 16.dp,
+    tintColor: Color? = null,
     enabled: Boolean = true,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
@@ -49,6 +51,7 @@ fun GlassCard(
             .clearLiquidGlass(
                 shape = shape,
                 interactive = enabled && onClick != null,
+                tintColor = tintColor,
                 interactionState = if (enabled && onClick != null) interactionState else null,
             )
             .then(clickModifier)

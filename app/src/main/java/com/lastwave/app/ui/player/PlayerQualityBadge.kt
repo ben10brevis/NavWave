@@ -2,6 +2,8 @@
 
 package com.lastwave.app.ui.player
 
+import com.lastwave.app.ui.glass.clearLiquidGlass
+
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
 import com.lastwave.app.data.playlist.isLikedIn
@@ -461,11 +463,11 @@ internal fun AppleMusicQualityBadge(
     ) {
         Row(
             modifier = Modifier
-                // Size animates first so the capsule itself glides when the
-                // label changes (Lossless -> AutoMix -> Hi-Res ...).
                 .animateContentSize()
-                .clip(CircleShape)
-                .background(capsuleColor)
+                .clearLiquidGlass(
+                    shape = CircleShape,
+                    interactive = true,
+                )
                 .combinedClickable(
                     onClick = {
                         haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -476,7 +478,7 @@ internal fun AppleMusicQualityBadge(
                         onClick()
                     },
                 )
-                .padding(start = 9.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+                .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {

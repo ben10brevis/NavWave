@@ -2,6 +2,11 @@
 
 package com.lastwave.app.ui.player
 
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.theme.LocalIsDarkTheme
+
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
 import com.lastwave.app.data.playlist.isLikedIn
@@ -455,72 +460,50 @@ internal fun QueuePanel(
                     }
                 }
             }
-            IconButton(
+            GlassIconButton(
+                imageVector = if (isQueueLocked) Icons.Filled.Lock else Icons.Filled.LockOpen,
+                contentDescription = if (isQueueLocked) "Unlock queue" else "Lock queue",
+                size = 42.dp,
+                iconSize = 20.dp,
+                tint = if (isQueueLocked) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.90f),
                 onClick = {
                     isQueueLockedState = !isQueueLockedState
                     haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 },
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (isQueueLocked) MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-                        else Color.White.copy(alpha = 0.14f)
-                    ),
-            ) {
-                Icon(
-                    imageVector = if (isQueueLocked) Icons.Filled.Lock else Icons.Filled.LockOpen,
-                    contentDescription = if (isQueueLocked) "Unlock queue" else "Lock queue",
-                    tint = if (isQueueLocked) MaterialTheme.colorScheme.primary
-                    else Color.White.copy(alpha = 0.90f),
-                )
-            }
+            )
             Spacer(Modifier.width(8.dp))
-            IconButton(
+            GlassIconButton(
+                imageVector = Icons.Filled.Visibility,
+                contentDescription = "Scroll to current song",
+                size = 42.dp,
+                iconSize = 20.dp,
+                enabled = state.currentIndex >= 0 && state.currentIndex < state.queue.size,
                 onClick = {
                     userScrollHoldUntil = 0L
                     scope.launch { listState.animateScrollToItem(state.currentIndex.coerceAtLeast(0)) }
                 },
-                enabled = state.currentIndex >= 0 && state.currentIndex < state.queue.size,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White.copy(alpha = 0.14f)),
-            ) {
-                Icon(
-                    Icons.Filled.Visibility,
-                    "Scroll to current song",
-                    tint = Color.White.copy(alpha = 0.90f),
-                )
-            }
+            )
             Spacer(Modifier.width(8.dp))
-            IconButton(
+            GlassIconButton(
+                imageVector = Icons.Filled.ClearAll,
+                contentDescription = "Clear queue except playing song",
+                size = 42.dp,
+                iconSize = 20.dp,
+                enabled = state.queue.size > 1 && !isQueueLocked,
+                tint = if (state.queue.size > 1 && !isQueueLocked) Color.White.copy(alpha = 0.90f) else Color.White.copy(alpha = 0.35f),
                 onClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
                     player.clearQueueKeepCurrent()
                 },
-                enabled = state.queue.size > 1 && !isQueueLocked,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White.copy(alpha = 0.14f)),
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ClearAll,
-                    contentDescription = "Clear queue except playing song",
-                    tint = if (state.queue.size > 1 && !isQueueLocked) Color.White.copy(alpha = 0.90f) else Color.White.copy(alpha = 0.35f),
-                )
-            }
-
+            )
         }
         if (shuffleUpcoming.isNotEmpty()) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(Color.White.copy(alpha = 0.08f))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                    .clearLiquidGlass(shape = RoundedCornerShape(18.dp), interactive = false)
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
                     "Up next in shuffle order",
@@ -664,34 +647,34 @@ internal fun QueuePanel(
                                 Box(
                                     Modifier
                                         .fillMaxSize()
-                                        .clip(itemShape)
-                                        .background(MaterialTheme.colorScheme.errorContainer)
+                                        .clearLiquidGlass(
+                                            shape = itemShape,
+                                            interactive = false,
+                                            tintColor = MaterialTheme.colorScheme.error.copy(alpha = 0.35f),
+                                        )
                                         .padding(horizontal = 24.dp),
                                     contentAlignment = Alignment.CenterEnd
                                 ) {
                                     Icon(
                                         Icons.Filled.DeleteOutline,
                                         contentDescription = stringResource(com.lastwave.app.R.string.player_delete_cd),
-                                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                                        tint = Color.White,
                                     )
                                 }
                             }
                         },
                         content = {
-                            LiquidGlassSurface(
-                                glassModifier = Modifier.liquidGlassChrome(itemShape, LocalLiquidGlass.current),
-                                onClick = { player.seekToQueueItem(currentQueueKeys.indexOf(stableKey).takeIf { it >= 0 } ?: currentIndex) },
-                                shape = itemShape,
-                                color = if (isCurrent) {
-                                    if (LocalLiquidGlass.current) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
-                                    else MaterialTheme.colorScheme.primaryContainer
-                                } else {
-                                    if (LocalLiquidGlass.current) MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.70f)
-                                    else MaterialTheme.colorScheme.surfaceContainerHighest
-                                },
-                                contentColor = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.fillMaxWidth(),
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clearLiquidGlass(
+                                        shape = itemShape,
+                                        interactive = true,
+                                        tintColor = if (isCurrent) MaterialTheme.colorScheme.primary.copy(alpha = 0.22f) else null,
+                                    )
+                                    .clickable {
+                                        player.seekToQueueItem(currentQueueKeys.indexOf(stableKey).takeIf { it >= 0 } ?: currentIndex)
+                                    },
                             ) {
                                 Row(
                                     Modifier.fillMaxWidth().padding(9.dp),
@@ -702,7 +685,7 @@ internal fun QueuePanel(
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
                                         color = if (isCurrent) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
+                                        else Color.White.copy(alpha = 0.65f),
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier.width(30.dp),
                                     )
@@ -714,40 +697,29 @@ internal fun QueuePanel(
                                             overflow = TextOverflow.Ellipsis,
                                             style = MaterialTheme.typography.titleSmall,
                                             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.SemiBold,
+                                            color = if (isCurrent) MaterialTheme.colorScheme.primary else Color.White,
                                         )
                                         Text(
                                             item.artist,
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.76f)
-                                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            color = Color.White.copy(alpha = 0.70f),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
                                     }
-                                    IconButton(
+                                    GlassIconButton(
+                                        imageVector = Icons.Filled.MoreVert,
+                                        contentDescription = stringResource(com.lastwave.app.R.string.player_menu_cd),
+                                        size = 36.dp,
+                                        iconSize = 20.dp,
                                         onClick = { menuIndex = currentQueueKeys.indexOf(stableKey).takeIf { it >= 0 } ?: currentIndex },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.MoreVert,
-                                            contentDescription = stringResource(com.lastwave.app.R.string.player_menu_cd),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
+                                    )
                                     if (!isQueueLocked) {
-                                        Icon(
-                                            Icons.Filled.DragHandle,
-                                            stringResource(com.lastwave.app.R.string.queue_drag_hint),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isDragging) 1f else 0.6f),
+                                        Box(
                                             modifier = Modifier
-                                                .padding(start = 8.dp)
-                                                .size(40.dp)
-                                                .clip(RoundedCornerShape(14.dp))
-                                                .background(
-                                                    if (isDragging) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-                                                    else MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f),
-                                                )
-                                                .padding(8.dp)
+                                                .padding(start = 6.dp)
+                                                .size(38.dp)
+                                                .clearLiquidGlass(shape = RoundedCornerShape(12.dp), interactive = false)
                                                 .pointerInput(stableKey) {
                                                     detectDragGestures(
                                                         onDragStart = {

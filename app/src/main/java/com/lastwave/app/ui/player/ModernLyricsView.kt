@@ -1,5 +1,7 @@
 package com.lastwave.app.ui.player
 
+import com.lastwave.app.ui.glass.clearLiquidGlass
+
 import com.lastwave.app.data.local.SeekbarStyle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -522,10 +524,11 @@ fun ModernLyricsPanel(
                                             .padding(bottom = 6.dp),
                                         horizontalArrangement = Arrangement.Center,
                                     ) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = liquidGlassContainerColor(Color.White.copy(alpha = 0.16f)),
-                                            contentColor = Color.White.copy(alpha = 0.92f),
+                                        Box(
+                                            modifier = Modifier
+                                                .clearLiquidGlass(shape = CircleShape, interactive = false)
+                                                .padding(horizontal = 14.dp, vertical = 6.dp),
+                                            contentAlignment = Alignment.Center,
                                         ) {
                                             Text(
                                                 text = syncLabel,
@@ -533,7 +536,7 @@ fun ModernLyricsPanel(
                                                     letterSpacing = 0.6.sp,
                                                     fontWeight = FontWeight.SemiBold,
                                                 ),
-                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+                                                color = Color.White.copy(alpha = 0.92f),
                                             )
                                         }
                                     }

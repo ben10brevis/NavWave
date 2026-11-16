@@ -2,6 +2,20 @@
 
 package com.lastwave.app.ui.player
 
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassCard
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.DynamicMeshBackground
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.QueueMusic
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.FormatQuote
+
 import com.lastwave.app.data.local.SeekbarStyle
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
@@ -1060,10 +1074,11 @@ internal fun FullPlayer(
                                 .padding(horizontal = if (isTabletLandscape) 32.dp else 20.dp)
                                 .playerVerticalSwipe(enabled = currentTab == FullPlayerTab.QUEUE),
                         ) {
-                            // FullPlayer sits on a dark blurred-artwork scrim in both light and
-                            // dark mode, so foreground must use the white overlay palette â€”
-                            // never MaterialTheme onSurface (near-black in light mode).
-                            LiquidGlassSurface(
+                            GlassIconButton(
+                                imageVector = if (currentTab != FullPlayerTab.NOW_PLAYING) Icons.Filled.ArrowBack else Icons.Filled.ExpandMore,
+                                contentDescription = if (currentTab != FullPlayerTab.NOW_PLAYING) "Back to player" else "Minimize player",
+                                size = 44.dp,
+                                iconSize = 24.dp,
                                 onClick = hapticClick {
                                     if (currentTab != FullPlayerTab.NOW_PLAYING) {
                                         onTabChange(FullPlayerTab.NOW_PLAYING)
@@ -1071,24 +1086,8 @@ internal fun FullPlayer(
                                         onCollapse()
                                     }
                                 },
-                                shape = CircleShape,
-                                color = liquidGlassContainerColor(Color.White.copy(alpha = 0.14f)),
-                                contentColor = Color.White.copy(alpha = 0.94f),
-                                glassModifier = Modifier.liquidGlassChrome(
-                                    CircleShape,
-                                    LocalLiquidGlass.current,
-                                    LiquidGlassPreset.FloatingControls,
-                                ),
-                                modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .size(44.dp),
-                            ) {
-                                Icon(
-                                    if (currentTab != FullPlayerTab.NOW_PLAYING) Icons.Filled.ArrowBack else Icons.Filled.ExpandMore,
-                                    if (currentTab != FullPlayerTab.NOW_PLAYING) "Back to player" else "Minimize player",
-                                    modifier = Modifier.size(26.dp),
-                                )
-                            }
+                                modifier = Modifier.align(Alignment.CenterStart),
+                            )
                             Column(
                                 Modifier.align(Alignment.Center).padding(horizontal = 96.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -1122,44 +1121,22 @@ internal fun FullPlayer(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
                                 if (currentTab == FullPlayerTab.LYRICS && onSetLyricsOffsetMs != null) {
-                                    LiquidGlassSurface(
+                                    GlassIconButton(
+                                        imageVector = Icons.Filled.Timer,
+                                        contentDescription = stringResource(com.lastwave.app.R.string.player_lyrics_offset_cd),
+                                        size = 44.dp,
+                                        iconSize = 22.dp,
+                                        tint = if (lyricsOffsetMs != 0L) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.94f),
                                         onClick = hapticClick { showLyricsOffsetDialog = true },
-                                        shape = CircleShape,
-                                        color = if (lyricsOffsetMs != 0L) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-                                        else liquidGlassContainerColor(Color.White.copy(alpha = 0.14f)),
-                                        contentColor = if (lyricsOffsetMs != 0L) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.94f),
-                                        glassModifier = Modifier.liquidGlassChrome(
-                                            CircleShape,
-                                            LocalLiquidGlass.current,
-                                            LiquidGlassPreset.FloatingControls,
-                                        ),
-                                        modifier = Modifier.size(44.dp),
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Timer,
-                                            contentDescription = stringResource(com.lastwave.app.R.string.player_lyrics_offset_cd),
-                                            modifier = Modifier.size(22.dp),
-                                        )
-                                    }
-                                }
-                                LiquidGlassSurface(
-                                    onClick = hapticClick { showTrackMenu = true },
-                                    shape = CircleShape,
-                                    color = liquidGlassContainerColor(Color.White.copy(alpha = 0.14f)),
-                                    contentColor = Color.White.copy(alpha = 0.94f),
-                                    glassModifier = Modifier.liquidGlassChrome(
-                                        CircleShape,
-                                        LocalLiquidGlass.current,
-                                        LiquidGlassPreset.FloatingControls,
-                                    ),
-                                    modifier = Modifier.size(44.dp),
-                                ) {
-                                    Icon(
-                                        Icons.Filled.MoreVert,
-                                        "Song options",
-                                        modifier = Modifier.size(22.dp),
                                     )
                                 }
+                                GlassIconButton(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = "Song options",
+                                    size = 44.dp,
+                                    iconSize = 22.dp,
+                                    onClick = hapticClick { showTrackMenu = true },
+                                )
                             }
                         }
                         Spacer(Modifier.height(6.dp))
@@ -1824,37 +1801,13 @@ internal fun FullPlayer(
                                                     onClick = hapticClick(if (isLiked) HapticFeedbackType.ToggleOff else HapticFeedbackType.Confirm, onToggleLiked),
                                                     size = 48.dp,
                                                 )
-                                                val lyricsInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                                                val isLyricsPressed by lyricsInteraction.collectIsPressedAsState()
-                                                val lyricsScale by animateFloatAsState(
-                                                    targetValue = if (isLyricsPressed) 0.82f else 1.0f,
-                                                    animationSpec = ExpressiveMotion.spatialSpring(),
-                                                    label = "lyricsScale",
-                                                )
-                                                LiquidGlassSurface(
-                                                    glassModifier = Modifier.liquidGlassChrome(CircleShape, LocalLiquidGlass.current, LiquidGlassPreset.PlayerControls, interactionSource = lyricsInteraction),
+                                                GlassIconButton(
+                                                    imageVector = Icons.Filled.FormatQuote,
+                                                    contentDescription = stringResource(com.lastwave.app.R.string.player_show_lyrics_cd),
+                                                    size = 46.dp,
+                                                    iconSize = 24.dp,
                                                     onClick = hapticClick { onPlayerLyricsChange(true) },
-                                                    interactionSource = lyricsInteraction,
-                                                    shape = CircleShape,
-                                                    color = liquidGlassContainerColor(Color.White.copy(alpha = 0.14f)),
-                                                    contentColor = Color.White.copy(alpha = 0.90f),
-                                                    tonalElevation = 0.dp,
-                                                    shadowElevation = 0.dp,
-                                                    modifier = Modifier
-                                                        .size(46.dp)
-                                                        .graphicsLayer {
-                                                            scaleX = lyricsScale
-                                                            scaleY = lyricsScale
-                                                        },
-                                                ) {
-                                                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                        Icon(
-                                                            Icons.Filled.FormatQuote,
-                                                            contentDescription = stringResource(com.lastwave.app.R.string.player_show_lyrics_cd),
-                                                            modifier = Modifier.size(24.dp),
-                                                        )
-                                                    }
-                                                }
+                                                )
                                             }
                                         }
                                     }
@@ -1883,7 +1836,7 @@ internal fun FullPlayer(
                                     )
                                     Spacer(Modifier.height(12.dp))
                                     MainControls(state, player, isTranslucent = LocalLiquidGlass.current || showFullBleed)
-                                    Spacer(Modifier.height(30.dp))
+                                    Spacer(Modifier.height(18.dp))
                                     PlayerUtilityControls(
                                         state = state,
                                         player = player,
@@ -1892,8 +1845,65 @@ internal fun FullPlayer(
                                         isVideoActive = isVideoActive,
                                         musicVideoEnabled = musicVideoEnabled,
                                         onToggleVideo = onToggleSyncedVideo,
+                                        onOpenQueue = { onTabChange(FullPlayerTab.QUEUE) },
                                         modifier = Modifier.padding(top = 4.dp),
                                     )
+
+                                    // Spotify-Style Peeking Lyrics Card (peeks up at bottom of Now Playing)
+                                    val successLyrics = lyricsState as? LyricsUiState.Success
+                                    val lyricLines = successLyrics?.lines.orEmpty()
+                                    if (!isTabletLandscape && lyricLines.isNotEmpty() && !playerLyricsActive) {
+                                        Spacer(Modifier.height(16.dp))
+                                        val currentPos = progressState.collectAsStateWithLifecycle().value.positionMs
+                                        val activeLine = remember(lyricLines, currentPos) {
+                                            val adjusted = currentPos + lyricsOffsetMs
+                                            lyricLines.lastOrNull { it.timeMs <= adjusted } ?: lyricLines.firstOrNull()
+                                        }
+                                        GlassCard(
+                                            onClick = { onTabChange(FullPlayerTab.LYRICS) },
+                                            shape = RoundedCornerShape(26.dp),
+                                            contentPadding = 0.dp,
+                                            tintColor = ambientColor.copy(alpha = 0.22f),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 4.dp),
+                                        ) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                ) {
+                                                    Text(
+                                                        text = "Lyrics",
+                                                        style = MaterialTheme.typography.titleMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color.White,
+                                                    )
+                                                    GlassIconButton(
+                                                        imageVector = Icons.Filled.Fullscreen,
+                                                        contentDescription = "Expand Lyrics",
+                                                        size = 32.dp,
+                                                        iconSize = 18.dp,
+                                                        onClick = { onTabChange(FullPlayerTab.LYRICS) },
+                                                    )
+                                                }
+                                                Spacer(Modifier.height(6.dp))
+                                                Text(
+                                                    text = activeLine?.text ?: "Lyrics available",
+                                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = Color.White,
+                                                    maxLines = 2,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                                 }
                             }
@@ -1902,38 +1912,44 @@ internal fun FullPlayer(
                     }
                 }
                 state.error?.takeIf { showError }?.let { message ->
-                    Surface(
-                        onClick = hapticClick(action = player::retry),
-                        shape = RoundedCornerShape(20.dp),
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp + bottomInset),
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp + bottomInset)
+                            .clearLiquidGlass(
+                                shape = RoundedCornerShape(20.dp),
+                                interactive = true,
+                                tintColor = MaterialTheme.colorScheme.error.copy(alpha = 0.25f),
+                            )
+                            .clickable(onClick = hapticClick(action = player::retry))
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
                     ) {
                         Row(
-                            Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Icon(Icons.Filled.ErrorOutline, null, modifier = Modifier.size(21.dp))
+                            Icon(Icons.Filled.ErrorOutline, null, tint = Color.White, modifier = Modifier.size(21.dp))
                             Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
                                 Text(
                                     message,
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.SemiBold,
+                                    color = Color.White,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
                                 )
                                 Text(
                                     "Tap to retry",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f),
+                                    color = Color.White.copy(alpha = 0.8f),
                                 )
                             }
-                            IconButton(
+                            GlassIconButton(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Dismiss error",
+                                size = 28.dp,
+                                iconSize = 18.dp,
                                 onClick = hapticClick(action = player::clearError),
-                                modifier = Modifier.size(28.dp),
-                            ) {
-                                Icon(Icons.Filled.Close, "Dismiss error", modifier = Modifier.size(18.dp))
-                            }
+                            )
                         }
                     }
                 }

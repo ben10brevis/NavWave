@@ -1,5 +1,9 @@
 package com.lastwave.app.ui.player
 
+import com.lastwave.app.ui.glass.GlassCard
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.clearLiquidGlass
+
 import com.lastwave.app.data.local.SeekbarStyle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -396,9 +400,8 @@ internal fun ModernLyricsControls(
             enter = fadeIn(tween(150)) + expandVertically(tween(200)),
             exit = fadeOut(tween(150)) + shrinkVertically(tween(200)),
         ) {
-            Surface(
+            GlassCard(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Black.copy(alpha = 0.35f),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
@@ -484,71 +487,27 @@ internal fun ModernLyricsControls(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (onToggleFullscreen != null) {
-                val playerInteraction = remember { MutableInteractionSource() }
-                val isPlayerPressed by playerInteraction.collectIsPressedAsState()
-                val playerScale by animateFloatAsState(
-                    targetValue = if (isPlayerPressed) 0.82f else 1.0f,
-                    animationSpec = ExpressiveMotion.spatialSpring(),
-                    label = "playerTabScale",
-                )
-                IconButton(
-                    onClick = hapticClick(action = onToggleFullscreen),
+                GlassIconButton(
+                    imageVector = if (isFullscreen) Icons.Filled.FullscreenExit else Icons.Filled.Fullscreen,
+                    contentDescription = if (isFullscreen) "Exit fullscreen lyrics" else "Fullscreen lyrics",
+                    size = 44.dp,
+                    iconSize = 24.dp,
                     enabled = controlsVisible,
-                    interactionSource = playerInteraction,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .graphicsLayer {
-                            scaleX = playerScale
-                            scaleY = playerScale
-                        }
-                        .clip(CircleShape)
-                        .liquidGlassChrome(CircleShape, LocalLiquidGlass.current, LiquidGlassPreset.FloatingControls, interactionSource = playerInteraction)
-                        .background(
-                            liquidGlassContainerColor(Color.White.copy(alpha = 0.14f)),
-                        ),
-                ) {
-                    Icon(
-                        if (isFullscreen) Icons.Filled.FullscreenExit else Icons.Filled.Fullscreen,
-                        contentDescription = if (isFullscreen) "Exit fullscreen lyrics" else "Fullscreen lyrics",
-                        modifier = Modifier.size(24.dp),
-                        tint = Color.White.copy(alpha = 0.90f),
-                    )
-                }
+                    onClick = hapticClick(action = onToggleFullscreen),
+                )
 
                 Spacer(Modifier.width(10.dp))
             }
 
             // 3-dots button placed right AFTER the fullscreen button
-            val moreInteraction = remember { MutableInteractionSource() }
-            val isMorePressed by moreInteraction.collectIsPressedAsState()
-            val moreScale by animateFloatAsState(
-                targetValue = if (isMorePressed) 0.82f else 1.0f,
-                animationSpec = ExpressiveMotion.spatialSpring(),
-                label = "moreBtnScale",
-            )
-            IconButton(
-                onClick = hapticClick { showLyricsOptions = true },
+            GlassIconButton(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = "Lyrics options",
+                size = 44.dp,
+                iconSize = 24.dp,
                 enabled = controlsVisible,
-                interactionSource = moreInteraction,
-                modifier = Modifier
-                    .size(44.dp)
-                    .graphicsLayer {
-                        scaleX = moreScale
-                        scaleY = moreScale
-                    }
-                    .clip(CircleShape)
-                    .liquidGlassChrome(CircleShape, LocalLiquidGlass.current, LiquidGlassPreset.FloatingControls, interactionSource = moreInteraction)
-                    .background(
-                        liquidGlassContainerColor(Color.White.copy(alpha = 0.14f)),
-                    ),
-            ) {
-                Icon(
-                    Icons.Filled.MoreVert,
-                    contentDescription = "Lyrics options",
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.White.copy(alpha = 0.90f),
-                )
-            }
+                onClick = hapticClick { showLyricsOptions = true },
+            )
         }
 
         if (showLyricsOptions) {
@@ -761,13 +720,11 @@ internal fun LyricsOptionsMenuDialog(
         onDismissRequest = onDismiss,
         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            tonalElevation = 6.dp,
+        Box(
             modifier = Modifier
                 .fillMaxWidth(0.88f)
-                .padding(vertical = 16.dp),
+                .padding(vertical = 16.dp)
+                .clearLiquidGlass(shape = RoundedCornerShape(28.dp), interactive = false),
         ) {
             Column(
                 modifier = Modifier
@@ -777,32 +734,35 @@ internal fun LyricsOptionsMenuDialog(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.size(40.dp),
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clearLiquidGlass(shape = CircleShape, interactive = false),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Filled.Lyrics,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(22.dp),
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Filled.Lyrics,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp),
+                        )
                     }
                     Text(
                         text = "Lyrics options",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = Color.White,
                         modifier = Modifier
                             .weight(1f)
                             .padding(horizontal = 14.dp),
                     )
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Filled.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    GlassIconButton(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Close",
+                        size = 36.dp,
+                        iconSize = 20.dp,
+                        onClick = onDismiss,
+                    )
                 }
 
                 // Provider and Share sit side by side as one connected pair.
@@ -983,15 +943,19 @@ private fun LyricsOptionsPill(
     modifier: Modifier = Modifier,
     content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
 ) {
-    Surface(
-        onClick = onClick,
-        shape = shape,
-        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
-        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-        modifier = modifier.height(48.dp),
+    Box(
+        modifier = modifier
+            .height(48.dp)
+            .clearLiquidGlass(
+                shape = shape,
+                interactive = true,
+                tintColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.22f) else null,
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             content = content,

@@ -2,6 +2,12 @@
 
 package com.lastwave.app.ui.player
 
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.theme.LocalIsDarkTheme
+
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
 import com.lastwave.app.data.playlist.isLikedIn
@@ -351,140 +357,110 @@ internal fun hapticClick(
 }
 
 @Composable
-internal fun MainControls(state: MusicPlayerState, player: MusicPlayer, isTranslucent: Boolean = false) {
-    val prevInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-    val isPrevPressed by prevInteraction.collectIsPressedAsState()
-    val prevScale by animateFloatAsState(if (isPrevPressed) 0.85f else 1.0f, ExpressiveMotion.spatialSpring(), label = "prevScale")
+internal fun MainControls(
+    state: MusicPlayerState,
+    player: MusicPlayer,
+    isTranslucent: Boolean = false,
+) {
+    val isPlaying = state.isPlaying
 
-    val playInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-    val isPlayPressed by playInteraction.collectIsPressedAsState()
-    val playScale by animateFloatAsState(
-        targetValue = if (isPlayPressed) 0.88f else 1.0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow,
-        ),
-        label = "playScale",
-    )
-
-    val nextInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-    val isNextPressed by nextInteraction.collectIsPressedAsState()
-    val nextScale by animateFloatAsState(if (isNextPressed) 0.85f else 1.0f, ExpressiveMotion.spatialSpring(), label = "nextScale")
-
-    // Adaptive transport row: fixed 58+188+58dp used to overflow narrow
-    // screens (320dp class + parent padding), clipping the side buttons so
-    // Next looked crushed against the edge. The pill now flexes between a
-    // legible floor and its design width; prev/next never clip on any
-    // screen size or Android version.
-    val sideSize = if (isTranslucent) 54.dp else 58.dp
-    val gapSize = if (isTranslucent) 18.dp else 16.dp
-    androidx.compose.foundation.layout.BoxWithConstraints(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center,
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val pillWidth = (maxWidth - sideSize * 2 - gapSize * 2)
-            .coerceIn(112.dp, if (isTranslucent) 180.dp else 188.dp)
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(gapSize, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-        LiquidGlassSurface(
-            glassModifier = Modifier.liquidGlassChrome(CircleShape, LocalLiquidGlass.current, LiquidGlassPreset.PlayerControls, interactionSource = prevInteraction),
+        // 1. Shuffle
+        GlassIconButton(
+            imageVector = Icons.Filled.Shuffle,
+            contentDescription = if (state.shuffleEnabled) "Shuffle on" else "Shuffle off",
+            size = 46.dp,
+            iconSize = 22.dp,
+            tint = if (state.shuffleEnabled) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.70f),
+            onClick = hapticClick(
+                if (state.shuffleEnabled) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn,
+                player::toggleShuffle,
+            ),
+        )
+
+        // 2. Previous
+        GlassIconButton(
+            imageVector = Icons.Filled.SkipPrevious,
+            contentDescription = "Previous",
+            size = 52.dp,
+            iconSize = 30.dp,
+            tint = Color.White,
             onClick = hapticClick(action = player::previous),
-            interactionSource = prevInteraction,
-            shape = CircleShape,
-            color = liquidGlassContainerColor(if (isTranslucent) Color.White.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.40f)),
-            contentColor = if (isTranslucent) Color.White.copy(alpha = 0.94f) else MaterialTheme.colorScheme.onSurface,
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
+        )
+
+        // 3. Play / Pause (Large 68dp Clear Liquid Glass Circle FAB)
+        val playInteraction = remember { MutableInteractionSource() }
+        val isPlayPressed by playInteraction.collectIsPressedAsState()
+        val playScale by animateFloatAsState(
+            targetValue = if (isPlayPressed) 0.90f else 1.0f,
+            animationSpec = spring(dampingRatio = 0.55f, stiffness = 380f),
+            label = "playScale",
+        )
+        Box(
             modifier = Modifier
-                .size(sideSize)
-                .graphicsLayer {
-                    scaleX = prevScale
-                    scaleY = prevScale
-                },
-        ) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Icon(Icons.Filled.SkipPrevious, "Previous", Modifier.size(if (isTranslucent) 28.dp else 31.dp))
-            }
-        }
-        val pillShape = RoundedCornerShape(100)
-        // Single source of truth for "glass is actually refracting": the
-        // container helper returns Transparent only when setting + device
-        // capability + backdrop all hold. The old contentColor checked only
-        // the *setting*, so setting-ON with an inactive effect (incapable
-        // device, missing backdrop) rendered a white icon on the solid-white
-        // fallback below â€” the "whole white" play button. Gating content on
-        // the same active flag closes that mismatch for every path.
-        val isPillGlassActive = LocalLiquidGlass.current &&
-            isLiquidGlassBackdropSupported() &&
-            LocalLiquidGlassBackdrop.current != null
-        LiquidGlassSurface(
-            glassModifier = Modifier.liquidGlassChrome(pillShape, LocalLiquidGlass.current, LiquidGlassPreset.FloatingControls, interactionSource = playInteraction),
-            onClick = hapticClick(if (state.isPlaying) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn, player::togglePlayPause),
-            interactionSource = playInteraction,
-            shape = pillShape,
-            // Fallback matches the sibling prev/next buttons (14% white veil,
-            // never solid white): on the full player's dark scrim the white
-            // icon stays readable with or without refraction.
-            color = liquidGlassContainerColor(if (isTranslucent) Color.White.copy(alpha = 0.14f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)),
-            contentColor = if (isPillGlassActive) {
-                if (isTranslucent) Color.White else MaterialTheme.colorScheme.primary
-            } else if (isTranslucent) Color.White.copy(alpha = 0.94f) else MaterialTheme.colorScheme.onPrimary,
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
-            modifier = Modifier
-                .width(pillWidth)
-                .height(if (isTranslucent) 56.dp else 60.dp)
+                .size(68.dp)
                 .graphicsLayer {
                     scaleX = playScale
                     scaleY = playScale
-                },
-        ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                if (state.isBuffering) {
-                    ExpressiveInlineLoadingIndicator(
-                        size = if (isTranslucent) 28.dp else 30.dp,
-                        color = androidx.compose.material3.LocalContentColor.current,
-                        strokeWidth = 3.dp,
-                    )
-                } else {
-                    AnimatedPlayPauseIcon(state.isPlaying, Modifier.size(if (isTranslucent) 28.dp else 30.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = if (state.isPlaying) "Pause" else "Play",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = androidx.compose.material3.LocalContentColor.current
-                    )
                 }
-            }
-        }
-        LiquidGlassSurface(
-            glassModifier = Modifier.liquidGlassChrome(CircleShape, LocalLiquidGlass.current, LiquidGlassPreset.PlayerControls, interactionSource = nextInteraction),
-            onClick = hapticClick(action = player::next),
-            interactionSource = nextInteraction,
-            shape = CircleShape,
-            color = liquidGlassContainerColor(if (isTranslucent) Color.White.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.40f)),
-            contentColor = if (isTranslucent) Color.White.copy(alpha = 0.94f) else MaterialTheme.colorScheme.onSurface,
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
-            modifier = Modifier
-                .size(sideSize)
-                .graphicsLayer {
-                    scaleX = nextScale
-                    scaleY = nextScale
-                },
+                .clearLiquidGlass(
+                    shape = CircleShape,
+                    interactive = true,
+                    tintColor = Color.White.copy(alpha = 0.18f),
+                )
+                .clickable(
+                    interactionSource = playInteraction,
+                    indication = null,
+                    onClick = hapticClick(
+                        if (isPlaying) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn,
+                        player::togglePlayPause,
+                    ),
+                ),
+            contentAlignment = Alignment.Center,
         ) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Icon(Icons.Filled.SkipNext, "Next", Modifier.size(if (isTranslucent) 28.dp else 31.dp))
+            if (state.isBuffering) {
+                ExpressiveInlineLoadingIndicator(
+                    size = 32.dp,
+                    color = Color.White,
+                    strokeWidth = 3.dp,
+                )
+            } else {
+                AnimatedPlayPauseIcon(isPlaying, Modifier.size(36.dp))
             }
         }
-        }
+
+        // 4. Next
+        GlassIconButton(
+            imageVector = Icons.Filled.SkipNext,
+            contentDescription = "Next",
+            size = 52.dp,
+            iconSize = 30.dp,
+            tint = Color.White,
+            onClick = hapticClick(action = player::next),
+        )
+
+        // 5. Repeat
+        GlassIconButton(
+            imageVector = if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Filled.RepeatOne else Icons.Filled.Repeat,
+            contentDescription = when (state.repeatMode) {
+                Player.REPEAT_MODE_ONE -> "Repeat one"
+                Player.REPEAT_MODE_ALL -> "Repeat all"
+                else -> "Repeat off"
+            },
+            size = 46.dp,
+            iconSize = 22.dp,
+            tint = if (state.repeatMode != Player.REPEAT_MODE_OFF) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.70f),
+            onClick = hapticClick(
+                if (state.repeatMode == Player.REPEAT_MODE_ONE) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn,
+                player::cycleRepeatMode,
+            ),
+        )
     }
 }
 
@@ -494,52 +470,21 @@ internal fun PlayerModeButton(
     description: String,
     icon: ImageVector,
     onClick: () -> Unit,
-    background: Color,
-    foreground: Color,
-    iconSize: androidx.compose.ui.unit.Dp,
+    background: Color = Color.Transparent,
+    foreground: Color = Color.White,
+    iconSize: androidx.compose.ui.unit.Dp = 20.dp,
     modifier: Modifier = Modifier,
     haptic: HapticFeedbackType = if (active) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn,
 ) {
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        if (pressed) 0.92f else 1f, ExpressiveMotion.spatialSpring(), label = "modePress",
-    )
-    val container by animateColorAsState(
-        if (active) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.86f)
-        else liquidGlassContainerColor(background), label = "modeContainer",
-    )
-    val content by animateColorAsState(
-        if (active) MaterialTheme.colorScheme.onPrimaryContainer else foreground, label = "modeContent",
-    )
-    LiquidGlassSurface(
-glassModifier = Modifier.liquidGlassChrome(CircleShape, LocalLiquidGlass.current, LiquidGlassPreset.PlayerControls, interactionSource = interaction),
+    GlassIconButton(
+        imageVector = icon,
+        contentDescription = description,
+        size = 44.dp,
+        iconSize = iconSize,
+        tint = if (active) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.85f),
         onClick = hapticClick(haptic, onClick),
-        shape = CircleShape,
-        color = container,
-        contentColor = content,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .semantics {
-                selected = active
-                stateDescription = description
-            },
-    ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Icon(icon, description, Modifier.size(iconSize))
-            if (active) {
-                Box(
-                    Modifier.align(Alignment.BottomCenter).padding(bottom = 5.dp)
-                        .size(4.dp).background(content, CircleShape),
-                )
-            }
-        }
-    }
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -552,82 +497,64 @@ internal fun PlayerUtilityControls(
     musicVideoEnabled: Boolean = true,
     showAutoEqInVolumePanel: Boolean = true,
     onToggleVideo: (() -> Unit)? = null,
+    onOpenQueue: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val edgeButtonBackground = if (isTranslucent) {
-        Color.White.copy(alpha = 0.12f)
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.40f)
-    }
-    val edgeButtonContent = if (isTranslucent) {
-        Color.White.copy(alpha = 0.85f)
-    } else {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.90f)
-    }
-
+    val isCustomAudio = state.speed != 1f || state.pitch != 1f
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(if (isTranslucent) 10.dp else 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PlayerModeButton(
-            active = state.shuffleEnabled,
-            description = if (state.shuffleEnabled) "Shuffle on" else "Shuffle off",
-            icon = Icons.Filled.Shuffle,
-            onClick = player::toggleShuffle,
-            background = edgeButtonBackground,
-            foreground = edgeButtonContent,
-            iconSize = if (isTranslucent) 19.dp else 20.dp,
-            modifier = Modifier.weight(1f).height(if (isTranslucent) 44.dp else 48.dp),
+        // Left: Audio Controls / Output
+        GlassIconButton(
+            imageVector = if (isCustomAudio) Icons.Filled.Tune else Icons.Filled.VolumeUp,
+            contentDescription = "Audio controls",
+            size = 44.dp,
+            iconSize = 22.dp,
+            tint = if (isCustomAudio) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.85f),
+            onClick = onOpenAudioControls,
         )
-        val isCustomAudio = state.speed != 1f || state.pitch != 1f
+
+        // Center: Video Pill or Automix Status
         if (musicVideoEnabled && onToggleVideo != null) {
             DividedUtilityPill(
                 isTranslucent = isTranslucent,
-                background = edgeButtonBackground,
-                foreground = edgeButtonContent,
+                background = Color.Transparent,
+                foreground = Color.White,
                 isCustomAudio = isCustomAudio,
                 isVideoActive = isVideoActive,
                 onOpenAudioControls = onOpenAudioControls,
                 onToggleVideo = onToggleVideo,
-                modifier = Modifier.weight(1f).height(if (isTranslucent) 44.dp else 48.dp),
+                modifier = Modifier.height(42.dp),
             )
-        } else {
-            PlayerModeButton(
-                active = isCustomAudio,
-                description = "Audio controls",
-                icon = if (isCustomAudio) Icons.Filled.Tune else Icons.Filled.VolumeUp,
+        } else if (state.deckBlendTelemetry.isBlendingActive) {
+            GlassChip(
+                text = "AutoMix",
+                selected = true,
                 onClick = onOpenAudioControls,
-                background = edgeButtonBackground,
-                foreground = edgeButtonContent,
-                iconSize = if (isTranslucent) 19.dp else 20.dp,
-                modifier = Modifier.weight(1f).height(if (isTranslucent) 44.dp else 48.dp),
-                haptic = HapticFeedbackType.ContextClick,
             )
         }
-        PlayerModeButton(
-            active = state.repeatMode != Player.REPEAT_MODE_OFF,
-            description = when (state.repeatMode) {
-                Player.REPEAT_MODE_ONE -> "Repeat one"
-                Player.REPEAT_MODE_ALL -> "Repeat all"
-                else -> "Repeat off"
-            },
-            icon = if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Filled.RepeatOne else Icons.Filled.Repeat,
-            onClick = player::cycleRepeatMode,
-            background = edgeButtonBackground,
-            foreground = edgeButtonContent,
-            iconSize = if (isTranslucent) 19.dp else 20.dp,
-            modifier = Modifier.weight(1f).height(if (isTranslucent) 44.dp else 48.dp),
-            // Repeat one is the last stop before off.
-            haptic = if (state.repeatMode == Player.REPEAT_MODE_ONE) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn,
-        )
+
+        // Right: Queue icon
+        if (onOpenQueue != null) {
+            GlassIconButton(
+                imageVector = Icons.Filled.QueueMusic,
+                contentDescription = "Playing queue",
+                size = 44.dp,
+                iconSize = 22.dp,
+                tint = Color.White.copy(alpha = 0.85f),
+                onClick = onOpenQueue,
+            )
+        } else {
+            Spacer(Modifier.size(44.dp))
+        }
     }
 }
 
 /**
- * Apple-style divided utility pill preserving the exact outer pill shape:
+ * Divided utility pill preserving the exact outer pill shape:
  * [ (Speaker / Audio) | (Video / EQ) ]
- * Left half opens audio controls sheet, right half toggles synchronized video.
  */
 @Composable
 internal fun DividedUtilityPill(
@@ -640,7 +567,6 @@ internal fun DividedUtilityPill(
     onToggleVideo: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    val container = liquidGlassContainerColor(background)
     val speakerInteraction = remember { MutableInteractionSource() }
     val videoInteraction = remember { MutableInteractionSource() }
     val speakerPressed by speakerInteraction.collectIsPressedAsState()
@@ -652,29 +578,21 @@ internal fun DividedUtilityPill(
         if (videoPressed) 0.88f else 1f, ExpressiveMotion.spatialSpring(), label = "videoScale",
     )
 
-    LiquidGlassSurface(
-        onClick = {},
-        glassModifier = Modifier.liquidGlassChrome(
-            CircleShape,
-            LocalLiquidGlass.current,
-            LiquidGlassPreset.PlayerControls,
-        ),
-        shape = CircleShape,
-        color = container,
-        contentColor = foreground,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
-        modifier = modifier,
+    Box(
+        modifier = modifier
+            .clearLiquidGlass(shape = CircleShape, interactive = true)
+            .padding(horizontal = 4.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // Left: Speaker / Audio Controls
             Box(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxHeight()
+                    .padding(horizontal = 10.dp)
                     .clickable(
                         interactionSource = speakerInteraction,
                         indication = null,
@@ -685,38 +603,29 @@ internal fun DividedUtilityPill(
                 Icon(
                     imageVector = Icons.Filled.VolumeUp,
                     contentDescription = "Audio Controls",
-                    tint = if (isCustomAudio) MaterialTheme.colorScheme.primary else foreground,
+                    tint = if (isCustomAudio) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.85f),
                     modifier = Modifier
-                        .size(if (isTranslucent) 18.dp else 19.dp)
+                        .size(19.dp)
                         .graphicsLayer {
                             scaleX = speakerScale
                             scaleY = speakerScale
                         },
                 )
-                if (isCustomAudio) {
-                    Box(
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 4.dp)
-                            .size(3.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape),
-                    )
-                }
             }
 
             // Divider: Subtle vertical line separating the two controls
             Box(
                 modifier = Modifier
                     .width(1.dp)
-                    .height(18.dp)
-                    .background(foreground.copy(alpha = 0.22f)),
+                    .height(16.dp)
+                    .background(Color.White.copy(alpha = 0.22f)),
             )
 
             // Right: Video Toggle
             Box(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxHeight()
+                    .padding(horizontal = 10.dp)
                     .clickable(
                         interactionSource = videoInteraction,
                         indication = null,
@@ -727,23 +636,14 @@ internal fun DividedUtilityPill(
                 Icon(
                     imageVector = Icons.Filled.SmartDisplay,
                     contentDescription = if (isVideoActive) "Switch to album art" else "Watch music video",
-                    tint = if (isVideoActive) MaterialTheme.colorScheme.primary else foreground,
+                    tint = if (isVideoActive) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.85f),
                     modifier = Modifier
-                        .size(if (isTranslucent) 18.dp else 19.dp)
+                        .size(19.dp)
                         .graphicsLayer {
                             scaleX = videoScale
                             scaleY = videoScale
                         },
                 )
-                if (isVideoActive) {
-                    Box(
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 4.dp)
-                            .size(3.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape),
-                    )
-                }
             }
         }
     }
