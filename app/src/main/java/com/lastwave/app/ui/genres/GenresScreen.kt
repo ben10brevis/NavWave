@@ -29,7 +29,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.GlassChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -161,15 +162,11 @@ private fun PeriodDropdown(period: String, onChange: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val label = GENRE_PERIODS.firstOrNull { it.first == period }?.second ?: "Overall"
     Box {
-        Surface(
-            shape = RoundedCornerShape(50),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            modifier = Modifier.clickable { expanded = true },
-        ) {
-            Row(Modifier.padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(label, style = MaterialTheme.typography.labelLarge)
-            }
-        }
+        GlassChip(
+            label = label,
+            selected = false,
+            onClick = { expanded = true },
+        )
         androidx.compose.material3.DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             GENRE_PERIODS.forEach { (value, text) ->
                 androidx.compose.material3.DropdownMenuItem(text = { Text(text) }, onClick = { onChange(value); expanded = false })
@@ -230,7 +227,7 @@ private fun GenreDetailSheet(
         if (shouldLoadMore && !state.detailLoading && state.detailHasMore && !state.isDiscoverMode) onLoadMore()
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    GlassBottomSheet(onDismissRequest = onDismiss) {
         Column(
             Modifier
                 .fillMaxSize()

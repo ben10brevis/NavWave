@@ -159,6 +159,8 @@ import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Extension
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -2376,7 +2378,7 @@ fun SettingsScreen(
 
     // -- Clear-all-data confirm --
     if (state.showClearAllConfirm) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = viewModel::dismissClearAllConfirm,
             title = { Text(stringResource(R.string.dialog_clear_all_title)) },
             text = { Text(stringResource(R.string.dialog_clear_all_text)) },
@@ -2387,7 +2389,7 @@ fun SettingsScreen(
 
     // -- YouTube Music disconnect confirm --
     if (showYtDisconnectConfirm) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showYtDisconnectConfirm = false },
             title = { Text(stringResource(R.string.dialog_disconnect_yt_title)) },
             text = { Text(stringResource(R.string.dialog_disconnect_yt_text)) },
@@ -2417,7 +2419,7 @@ fun SettingsScreen(
 
     // -- Spotify disconnect confirm --
     if (showSpotifyDisconnectConfirm) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showSpotifyDisconnectConfirm = false },
             title = { Text("Disconnect Spotify?") },
             text = { Text("This will remove your Spotify session and log you out. Spotify Canvas loops and synced playlists will be disabled until you reconnect.") },
@@ -2459,7 +2461,7 @@ fun SettingsScreen(
 
     // -- Restore confirm --
     if (state.showRestoreConfirm) {        val isPlaylistMirror = state.pendingRestoreKind == PendingRestoreKind.PLAYLIST_MIRROR
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = viewModel::dismissRestoreConfirm,
             title = { Text(if (isPlaylistMirror) "Sync playlist JSON?" else "Restore backup?") },
             text = {
@@ -2626,7 +2628,7 @@ fun SettingsScreen(
     // -- Enable Scrobbling password dialog --
     if (state.showSessionKeyDialog) {
         var password by remember { mutableStateOf("") }
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = viewModel::dismissSessionKeyDialog,
             title = { Text(stringResource(R.string.set_scrobble_title)) },
             text = {
@@ -2832,23 +2834,10 @@ fun SettingsScreen(
             Triple(4, "Data Saver", "Low-bitrate audio to reduce mobile data use" to "DATA SAVER"),
         )
         val selectedQuality = if (editingCellularQuality) misc.cellularStreamingQuality else misc.wifiStreamingQuality
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
-        ModalBottomSheet(
+        GlassBottomSheet(
             onDismissRequest = { showQualityDialog = false },
-            sheetState = sheetState,
-            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            dragHandle = {
-                Surface(
-                    shape = RoundedCornerShape(50),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                    modifier = Modifier
-                        .padding(top = 12.dp, bottom = 8.dp)
-                        .size(width = 36.dp, height = 4.dp),
-                ) {}
-            },
         ) {
             Column(
                 modifier = Modifier
@@ -2978,7 +2967,7 @@ fun SettingsScreen(
     }
 
     if (showHiResStartDialog) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showHiResStartDialog = false },
             title = { Text("Playback start") },
             text = {
@@ -3012,23 +3001,10 @@ fun SettingsScreen(
             Triple(4, "Data Saver", "96 kbps • High Efficiency AAC" to "96 kbps"),
             Triple(-1, "YouTube Music", "128-256 kbps • YouTube Music AAC / Opus stream" to "YOUTUBE"),
         )
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
-        ModalBottomSheet(
+        GlassBottomSheet(
             onDismissRequest = { showDownloadQualityDialog = false },
-            sheetState = sheetState,
-            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            dragHandle = {
-                Surface(
-                    shape = RoundedCornerShape(50),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                    modifier = Modifier
-                        .padding(top = 12.dp, bottom = 8.dp)
-                        .size(width = 36.dp, height = 4.dp),
-                ) {}
-            },
         ) {
             Column(
                 modifier = Modifier

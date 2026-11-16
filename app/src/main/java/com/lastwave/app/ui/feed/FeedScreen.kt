@@ -75,7 +75,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Whatshot
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -1646,10 +1646,8 @@ fun FeedScreen(
 
     sectionMenuTarget?.let { (key, name) ->
         val isPinned = key in pinnedHomeSections
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { sectionMenuTarget = null },
-            shape = RoundedCornerShape(24.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             title = {
                 Text(
                     text = name,
@@ -1659,17 +1657,17 @@ fun FeedScreen(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Surface(
-                        onClick = {
-                            viewModel.togglePinHomeSection(key)
-                            sectionMenuTarget = null
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        modifier = Modifier.fillMaxWidth(),
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearLiquidGlass(shape = RoundedCornerShape(12.dp), interactive = true)
+                            .clickable {
+                                viewModel.togglePinHomeSection(key)
+                                sectionMenuTarget = null
+                            }
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
                     ) {
                         Row(
-                            Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
@@ -1685,17 +1683,17 @@ fun FeedScreen(
                             )
                         }
                     }
-                    Surface(
-                        onClick = {
-                            viewModel.hideHomeSection(key)
-                            sectionMenuTarget = null
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        modifier = Modifier.fillMaxWidth(),
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearLiquidGlass(shape = RoundedCornerShape(12.dp), interactive = true)
+                            .clickable {
+                                viewModel.hideHomeSection(key)
+                                sectionMenuTarget = null
+                            }
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
                     ) {
                         Row(
-                            Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {

@@ -178,7 +178,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.lastwave.app.ui.glass.GlassBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -483,13 +483,12 @@ internal fun ColorTile(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ColorWheelSheet(onDismiss: () -> Unit, onApply: (Color) -> Unit) {
-    val sheetState = rememberModalBottomSheetState()
     var hue by remember { mutableStateOf(4f) }
     var saturation by remember { mutableStateOf(0.75f) }
     var lightness by remember { mutableStateOf(0.5f) }
     val previewColor = Color.hsl(hue, saturation, lightness)
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    GlassBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

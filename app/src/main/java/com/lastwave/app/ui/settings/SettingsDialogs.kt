@@ -2,6 +2,9 @@ package com.lastwave.app.ui.settings
 
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import com.lastwave.app.ui.glass.GlassDialog
+import com.lastwave.app.ui.glass.GlassBasicDialog
+import com.lastwave.app.ui.glass.clearLiquidGlass
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
@@ -289,7 +292,7 @@ internal fun LyricsProviderDialog(
     onSelect: (LyricsProvider) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.settings_lyrics_provider)) },
         text = {
@@ -343,7 +346,7 @@ internal fun LyricsAutoHideDialog(
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.set_lyrics_autohide_title)) },
         text = {
@@ -384,7 +387,7 @@ internal fun RecommendationSourceDialog(
     onSelect: (RecommendationSource) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.settings_recommendations_title)) },
         text = {
@@ -465,7 +468,7 @@ internal fun TranslationLanguageDialog(
 ) {
     val locale = remember { Locale.getDefault() }
     val languages = remember { TRANSLATION_LANGUAGES }
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.set_translation_language_title)) },
         text = {
@@ -519,29 +522,19 @@ internal fun SeekbarStyleDialog(
     val secondaryColor = MaterialTheme.colorScheme.secondary
     val tertiaryColor = MaterialTheme.colorScheme.tertiary
 
-    BasicAlertDialog(
+    GlassBasicDialog(
         onDismissRequest = onDismiss,
     ) {
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            tonalElevation = 6.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+        Column(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_seekbar_style),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.height(18.dp))
+            Text(
+                text = stringResource(R.string.settings_seekbar_style),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(18.dp))
 
                 // Top row: 2 cards side by side (Default and Wavy)
                 Row(
@@ -620,7 +613,6 @@ internal fun SeekbarStyleDialog(
             }
         }
     }
-}
 
 @Composable
 private fun SeekbarStyleLiveCard(
@@ -633,25 +625,16 @@ private fun SeekbarStyleLiveCard(
     tertiaryColor: Color,
     modifier: Modifier = Modifier,
 ) {
-    val borderColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-    }
-    val borderWidth = if (selected) 2.dp else 1.dp
-    val containerColor = if (selected) {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.20f)
-    } else {
-        MaterialTheme.colorScheme.surfaceContainer
-    }
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
+            .clearLiquidGlass(
+                shape = RoundedCornerShape(20.dp),
+                tintColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else null,
+                interactive = true,
+            )
             .clip(RoundedCornerShape(20.dp))
-            .border(borderWidth, borderColor, RoundedCornerShape(20.dp))
-            .background(containerColor)
             .clickable(onClick = onSelect)
             .padding(horizontal = 10.dp, vertical = 12.dp)
     ) {

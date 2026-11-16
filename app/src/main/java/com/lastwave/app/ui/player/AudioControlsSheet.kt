@@ -2,6 +2,14 @@
 
 package com.lastwave.app.ui.player
 
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.GlassSlider
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassSwitch
+
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -364,21 +372,9 @@ internal fun AudioControlsSheet(
     var currentSpeed by remember(state.speed) { mutableFloatStateOf(state.speed) }
     var currentPitch by remember(state.pitch) { mutableFloatStateOf(state.pitch) }
 
-    ModalBottomSheet(
+    GlassBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        dragHandle = {
-            Surface(
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 8.dp)
-                    .size(width = 36.dp, height = 4.dp),
-            ) {}
-        },
     ) {
         Column(
             modifier = Modifier
@@ -426,25 +422,20 @@ internal fun AudioControlsSheet(
                         )
                     }
                 }
-                IconButton(
+                GlassIconButton(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    size = 36.dp,
+                    iconSize = 20.dp,
                     onClick = onDismiss,
-                    modifier = Modifier.size(36.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
+                )
             }
 
             // 2. In-App Volume Card: Independent playback volume
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f)),
-                modifier = Modifier.fillMaxWidth(),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clearLiquidGlass(shape = RoundedCornerShape(20.dp), interactive = false),
             ) {
                 Column(
                     modifier = Modifier
@@ -497,11 +488,10 @@ internal fun AudioControlsSheet(
             }
 
             // 3. Slowed & Pitch Section Card
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f)),
-                modifier = Modifier.fillMaxWidth(),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clearLiquidGlass(shape = RoundedCornerShape(20.dp), interactive = false),
             ) {
                 Column(
                     modifier = Modifier
@@ -616,7 +606,7 @@ internal fun AudioControlsSheet(
                                 )
                             }
                         }
-                        Slider(
+                        GlassSlider(
                             value = currentSpeed,
                             onValueChange = { value ->
                                 val rounded = ((value * 100).roundToInt() / 100f).coerceIn(0.50f, 1.50f)
@@ -629,10 +619,6 @@ internal fun AudioControlsSheet(
                                 }
                             },
                             valueRange = 0.50f..1.50f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary,
-                                activeTrackColor = MaterialTheme.colorScheme.primary,
-                            ),
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -663,7 +649,7 @@ internal fun AudioControlsSheet(
                                 )
                             }
                         }
-                        Slider(
+                        GlassSlider(
                             value = currentPitch,
                             onValueChange = { value ->
                                 val rounded = ((value * 100).roundToInt() / 100f).coerceIn(0.50f, 1.50f)
@@ -676,10 +662,6 @@ internal fun AudioControlsSheet(
                                 }
                             },
                             valueRange = 0.50f..1.50f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.secondary,
-                                activeTrackColor = MaterialTheme.colorScheme.secondary,
-                            ),
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -688,11 +670,10 @@ internal fun AudioControlsSheet(
 
             // 5. Equalizer & Acoustic Tuning Card
             if (showAutoEq) {
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f)),
-                    modifier = Modifier.fillMaxWidth(),
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clearLiquidGlass(shape = RoundedCornerShape(20.dp), interactive = false),
                 ) {
                     Column(
                         modifier = Modifier
@@ -765,10 +746,10 @@ internal fun AudioControlsSheet(
             val hapticsConfig by player.hapticsController.config.collectAsStateWithLifecycle()
             val isUsbActive = player.isUsbExclusiveActive
             val isHardwareAvailable = player.hapticsController.isHardwareHapticGeneratorAvailable()
-            Surface(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.fillMaxWidth(),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clearLiquidGlass(shape = RoundedCornerShape(24.dp), interactive = false),
             ) {
                 Column(
                     modifier = Modifier

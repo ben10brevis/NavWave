@@ -58,7 +58,7 @@ import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -694,7 +694,7 @@ fun DownloadsScreen(
 
     // Delete single track dialog
     trackToDelete?.let { track ->
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { trackToDelete = null },
             title = { Text(stringResource(com.lastwave.app.R.string.dl_delete_title, track.title)) },
             text = {
@@ -731,7 +731,7 @@ fun DownloadsScreen(
 
     // Clear history only confirm
     if (showClearHistoryConfirm) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showClearHistoryConfirm = false },
             title = { Text(stringResource(com.lastwave.app.R.string.dl_clear_history_title)) },
             text = { Text(stringResource(com.lastwave.app.R.string.dl_clear_history, storageNoun)) },
@@ -753,7 +753,7 @@ fun DownloadsScreen(
 
     // Clear all files confirm
     if (showClearAllConfirm) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showClearAllConfirm = false },
             title = { Text(stringResource(com.lastwave.app.R.string.dl_delete_all_title)) },
             text = { Text(stringResource(com.lastwave.app.R.string.dl_delete_all, tracks.size, storageNoun, totalSizeText)) },

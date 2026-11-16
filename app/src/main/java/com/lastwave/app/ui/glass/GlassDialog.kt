@@ -86,3 +86,100 @@ fun GlassDialog(
         }
     }
 }
+
+/**
+ * Material 3 AlertDialog drop-in replacement with Composable title and optional icon.
+ */
+@Composable
+fun GlassDialog(
+    onDismissRequest: () -> Unit,
+    confirmButton: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    dismissButton: (@Composable () -> Unit)? = null,
+    icon: (@Composable () -> Unit)? = null,
+    title: (@Composable () -> Unit)? = null,
+    text: (@Composable () -> Unit)? = null,
+    properties: DialogProperties = DialogProperties(),
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = properties,
+    ) {
+        Box(
+            modifier = modifier
+                .widthIn(min = 280.dp, max = 560.dp)
+                .clearLiquidGlass(
+                    shape = RoundedCornerShape(28.dp),
+                    isSheet = true,
+                    interactive = false,
+                )
+                .padding(24.dp),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                if (icon != null) {
+                    Box(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        icon()
+                    }
+                }
+
+                if (title != null) {
+                    title()
+                }
+
+                if (text != null) {
+                    text()
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (dismissButton != null) {
+                        dismissButton()
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    confirmButton()
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Basic dialog container with Clear Liquid Glass styling.
+ * Drop-in replacement for BasicAlertDialog.
+ */
+@Composable
+fun GlassBasicDialog(
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    properties: DialogProperties = DialogProperties(),
+    content: @Composable () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = properties,
+    ) {
+        Box(
+            modifier = modifier
+                .widthIn(min = 280.dp, max = 560.dp)
+                .clearLiquidGlass(
+                    shape = RoundedCornerShape(28.dp),
+                    isSheet = true,
+                    interactive = false,
+                )
+                .padding(24.dp),
+        ) {
+            content()
+        }
+    }
+}

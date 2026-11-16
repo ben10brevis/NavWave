@@ -66,7 +66,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
+import com.lastwave.app.ui.glass.clearLiquidGlass
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -162,7 +163,7 @@ internal fun VideoCandidatePickerDialog(
     var videoLink by remember(track.title, track.artist) { mutableStateOf("") }
     when (val picker = state) {
         VideoPickerUiState.Hidden -> Unit
-        VideoPickerUiState.Loading -> AlertDialog(
+        VideoPickerUiState.Loading -> GlassDialog(
             onDismissRequest = viewModel::dismissVideoPicker,
             title = { Text("Find the right video") },
             text = {
@@ -182,13 +183,13 @@ internal fun VideoCandidatePickerDialog(
             },
             confirmButton = { TextButton(onClick = viewModel::dismissVideoPicker) { Text("Cancel") } },
         )
-        is VideoPickerUiState.Error -> AlertDialog(
+        is VideoPickerUiState.Error -> GlassDialog(
             onDismissRequest = viewModel::dismissVideoPicker,
             title = { Text("Video search failed") },
             text = { Text(picker.message) },
             confirmButton = { TextButton(onClick = viewModel::dismissVideoPicker) { Text("OK") } },
         )
-        is VideoPickerUiState.Results -> AlertDialog(
+        is VideoPickerUiState.Results -> GlassDialog(
             onDismissRequest = viewModel::dismissVideoPicker,
             title = { Text("Choose a video") },
             text = {
@@ -213,15 +214,20 @@ internal fun VideoCandidatePickerDialog(
                     } else {
                         LazyColumn(modifier = Modifier.height(320.dp)) {
                             items(picker.candidates, key = { it.videoId }) { candidate ->
-                                Surface(
-                                    onClick = { viewModel.selectVideo(candidate) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = if (candidate.videoId == picker.savedVideoId) {
-                                        MaterialTheme.colorScheme.secondaryContainer
-                                    } else Color.Transparent,
-                                    modifier = Modifier.fillMaxWidth(),
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clearLiquidGlass(
+                                            shape = RoundedCornerShape(12.dp),
+                                            tintColor = if (candidate.videoId == picker.savedVideoId) {
+                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                            } else null,
+                                            interactive = true,
+                                        )
+                                        .clickable { viewModel.selectVideo(candidate) }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
                                 ) {
-                                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                                    Column {
                                         Text(
                                             candidate.title,
                                             style = MaterialTheme.typography.bodyMedium,

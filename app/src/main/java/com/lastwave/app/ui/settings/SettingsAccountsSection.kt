@@ -154,7 +154,7 @@ import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Extension
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -621,7 +621,7 @@ internal fun LastFmIntegrationCard(
     }
 
     if (showDisconnectConfirm) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showDisconnectConfirm = false },
             title = { Text(stringResource(R.string.set_lfm_disc_title)) },
             text = { Text(stringResource(R.string.set_lfm_disc_text)) },

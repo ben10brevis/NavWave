@@ -58,7 +58,7 @@ import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -139,7 +139,7 @@ internal fun DownloadLocationDialog(
     onReset: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(com.lastwave.app.R.string.dl_location)) },
         text = {
@@ -197,7 +197,7 @@ internal fun DownloadFolderDialog(
         com.lastwave.app.data.local.sanitizeDownloadFolderName(input.ifBlank { currentFolder })
     }
     val isChanged = sanitized != currentFolder
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(com.lastwave.app.R.string.dl_folder)) },
         text = {
@@ -255,7 +255,7 @@ internal fun FolderOrganizationDialog(
     onUseAlbumArtistChange: (Boolean) -> Unit,
     onPrimaryOnlyChange: (Boolean) -> Unit,
 ) {
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(com.lastwave.app.R.string.dl_org)) },
         text = {

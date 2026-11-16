@@ -66,7 +66,7 @@ import androidx.compose.material.icons.outlined.Search
 import com.lastwave.app.ui.glass.GlassBottomTabBar
 import com.lastwave.app.ui.glass.GlassTabItem
 import com.lastwave.app.ui.search.SearchScreen
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -315,16 +315,10 @@ fun MainShell(
 
     if (shouldShowLoginPrompt) {
         var dontShowAgain by remember { mutableStateOf(false) }
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = {
                 if (dontShowAgain) mainShellViewModel.setSuppressYouTubeLoginPrompt(true)
                 promptDismissedThisSession = true
-            },
-            shape = RoundedCornerShape(28.dp),
-            containerColor = if (LocalLiquidGlass.current) {
-                MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f)
-            } else {
-                MaterialTheme.colorScheme.surfaceContainerHigh
             },
             title = {
                 Text(
@@ -935,10 +929,8 @@ private fun JoinSupportDialog(
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(24.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),

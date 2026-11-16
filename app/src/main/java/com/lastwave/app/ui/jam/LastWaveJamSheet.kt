@@ -46,8 +46,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.clearLiquidGlass
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
@@ -137,11 +138,8 @@ fun LastWaveJamSheet(
         }
     }
 
-    ModalBottomSheet(
+    GlassBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
     ) {
         Column(
             modifier = Modifier
@@ -267,10 +265,10 @@ fun LastWaveJamSheet(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // Join Room Tab
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearLiquidGlass(shape = RoundedCornerShape(16.dp)),
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -334,10 +332,10 @@ fun LastWaveJamSheet(
                     }
                 } else {
                     // Create Room Tab
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearLiquidGlass(shape = RoundedCornerShape(16.dp)),
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -504,10 +502,10 @@ fun LastWaveJamSheet(
                 }
             } else {
                 // In Active Room State
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clearLiquidGlass(shape = RoundedCornerShape(18.dp)),
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -615,10 +613,10 @@ fun LastWaveJamSheet(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // Synced Now Playing Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clearLiquidGlass(shape = RoundedCornerShape(14.dp)),
                 ) {
                     Row(
                         modifier = Modifier
@@ -777,12 +775,11 @@ fun LastWaveJamSheet(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // In-room live chat
-                Card(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(170.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                        .height(170.dp)
+                        .clearLiquidGlass(shape = RoundedCornerShape(14.dp)),
                 ) {
                     Column(
                         modifier = Modifier

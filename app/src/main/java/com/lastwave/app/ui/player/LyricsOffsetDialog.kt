@@ -10,12 +10,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,6 +25,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lastwave.app.R
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.GlassDialog
+import com.lastwave.app.ui.glass.GlassSlider
 import kotlin.math.roundToLong
 
 @Composable
@@ -38,7 +37,7 @@ fun LyricsOffsetDialog(
     onDismiss: () -> Unit,
 ) {
     var draftMs by remember(currentMs) { mutableLongStateOf(currentMs) }
-    AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.ly_offset_title)) },
         text = {
@@ -53,7 +52,7 @@ fun LyricsOffsetDialog(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                 )
-                Slider(
+                GlassSlider(
                     value = draftMs.toFloat().coerceIn(-10000f, 10000f),
                     onValueChange = {
                         val rounded = it.roundToLong()
@@ -61,93 +60,59 @@ fun LyricsOffsetDialog(
                         onSelect(rounded)
                     },
                     valueRange = -10000f..10000f,
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    OutlinedButton(
+                    GlassChip(
+                        label = "−1s",
+                        selected = false,
                         onClick = {
                             draftMs = (draftMs - 1000).coerceIn(-10000L, 10000L)
                             onSelect(draftMs)
                         },
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 8.dp),
-                    ) {
-                        Text(
-                            "−1s",
-                            maxLines = 1,
-                            softWrap = false,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
-                    OutlinedButton(
+                    )
+                    GlassChip(
+                        label = "−250ms",
+                        selected = false,
                         onClick = {
                             draftMs = (draftMs - 250).coerceIn(-10000L, 10000L)
                             onSelect(draftMs)
                         },
                         modifier = Modifier.weight(1.1f),
-                        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 8.dp),
-                    ) {
-                        Text(
-                            "−250ms",
-                            maxLines = 1,
-                            softWrap = false,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
-                    OutlinedButton(
+                    )
+                    GlassChip(
+                        label = "+250ms",
+                        selected = false,
                         onClick = {
                             draftMs = (draftMs + 250).coerceIn(-10000L, 10000L)
                             onSelect(draftMs)
                         },
                         modifier = Modifier.weight(1.1f),
-                        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 8.dp),
-                    ) {
-                        Text(
-                            "+250ms",
-                            maxLines = 1,
-                            softWrap = false,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
-                    OutlinedButton(
+                    )
+                    GlassChip(
+                        label = "+1s",
+                        selected = false,
                         onClick = {
                             draftMs = (draftMs + 1000).coerceIn(-10000L, 10000L)
                             onSelect(draftMs)
                         },
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 8.dp),
-                    ) {
-                        Text(
-                            "+1s",
-                            maxLines = 1,
-                            softWrap = false,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
-                    FilledTonalButton(
+                    )
+                    GlassChip(
+                        label = "Reset",
+                        icon = Icons.Filled.RestartAlt,
+                        selected = false,
                         onClick = {
                             draftMs = 0L
                             onSelect(0L)
                         },
                         modifier = Modifier.weight(1.2f),
-                        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 8.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.RestartAlt,
-                            contentDescription = "Reset",
-                            modifier = Modifier.size(15.dp),
-                        )
-                        Spacer(Modifier.width(2.dp))
-                        Text(
-                            "Reset",
-                            maxLines = 1,
-                            softWrap = false,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
+                    )
                 }
             }
         },

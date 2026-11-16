@@ -1,5 +1,10 @@
 package com.lastwave.app.ui.common
 
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.GlassDialog
+import com.lastwave.app.ui.glass.GlassBasicDialog
+
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -481,7 +486,7 @@ fun TrackContextMenuSheet(
         var showCustomDialog by remember { mutableStateOf(false) }
 
         if (showCustomDialog) {
-            AlertDialog(
+            GlassDialog(
                 onDismissRequest = { showCustomDialog = false },
                 title = { Text(stringResource(R.string.menu_custom_sleep_timer)) },
                 text = {
@@ -516,57 +521,34 @@ fun TrackContextMenuSheet(
             )
         }
 
-        androidx.compose.ui.window.Dialog(onDismissRequest = { showTimerDialog = false }) {
-            Surface(
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Column(Modifier.padding(20.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.menu_sleep_timer), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                        androidx.compose.material3.IconButton(
-                            onClick = { showCustomDialog = true },
-                            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
-                        ) {
-                            Icon(Icons.Filled.Add, stringResource(R.string.menu_custom_timer))
-                        }
+        GlassBasicDialog(onDismissRequest = { showTimerDialog = false }) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.menu_sleep_timer), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    androidx.compose.material3.IconButton(
+                        onClick = { showCustomDialog = true },
+                        modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                    ) {
+                        Icon(Icons.Filled.Add, stringResource(R.string.menu_custom_timer))
                     }
-                    Spacer(Modifier.height(16.dp))
-                    listOf(0, 15, 30, 60).forEach { minutes ->
-                        TextButton(
-                            onClick = {
-                                musicPlayer.setSleepTimerMinutes(minutes)
-                                showTimerDialog = false
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text(if (minutes == 0) stringResource(R.string.menu_timer_off) else stringResource(R.string.menu_timer_minutes, minutes)) }
-                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                listOf(0, 15, 30, 60).forEach { minutes ->
+                    TextButton(
+                        onClick = {
+                            musicPlayer.setSleepTimerMinutes(minutes)
+                            showTimerDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text(if (minutes == 0) stringResource(R.string.menu_timer_off) else stringResource(R.string.menu_timer_minutes, minutes)) }
                 }
             }
         }
     }
 
-    ModalBottomSheet(
+    GlassBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        modifier = Modifier.liquidGlassChrome(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp), true),
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        // The background behind is smoothly blurred by EdgeToEdgeDialogWindow.
-        // A translucent/transparent container lets the soft blur shine through
-        // while the individual action cards float with clean contrast on top.
-        containerColor = Color.Transparent,
-        scrimColor = Color.Black.copy(alpha = 0.32f),
-        contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
-        dragHandle = {
-            Surface(
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 8.dp)
-                    .size(width = 36.dp, height = 4.dp),
-            ) {}
-        },
     ) {
         EdgeToEdgeDialogWindow()
         Column(
@@ -841,29 +823,26 @@ fun TrackContextMenuSheet(
 @Composable
 private fun StartMixCard(onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.97f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
-        label = "startMixScale",
-    )
+    val scale = rememberGroupPressScale(interactionSource)
 
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-        // 0dp deliberately — see ModeCard/SettingsToggleCard for why a
-        // nonzero tonalElevation would blend a second tinted layer on top
-        // of containerColor here.
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = RoundedCornerShape(22.dp),
-        interactionSource = interactionSource,
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            },
+            }
+            .clearLiquidGlass(
+                shape = RoundedCornerShape(22.dp),
+                interactive = true,
+                tintColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
     ) {
         Row(
             Modifier.padding(horizontal = 18.dp, vertical = 10.dp).fillMaxWidth(),
@@ -873,7 +852,7 @@ private fun StartMixCard(onClick: () -> Unit) {
                 Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.onPrimary),
+                    .background(Color.White),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Filled.Shuffle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
@@ -883,7 +862,7 @@ private fun StartMixCard(onClick: () -> Unit) {
                 stringResource(R.string.menu_start_mix),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = Color.White,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -916,22 +895,20 @@ private fun WatchVideoCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val scale = rememberGroupPressScale(interactionSource)
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-        shape = RoundedCornerShape(22.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        interactionSource = interactionSource,
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 2.dp)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            },
+            }
+            .clearLiquidGlass(shape = RoundedCornerShape(22.dp), interactive = true)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
     ) {
         Row(
             modifier = Modifier
@@ -960,21 +937,21 @@ private fun WatchVideoCard(
                         text = stringResource(R.string.menu_watch_video),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = Color.White,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    Box(
+                        modifier = Modifier
+                            .clearLiquidGlass(shape = RoundedCornerShape(6.dp), interactive = false, tintColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
                     ) {
                         Text(
                             text = stringResource(R.string.video_sync_tag),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         )
                     }
                 }
@@ -982,7 +959,7 @@ private fun WatchVideoCard(
                 Text(
                     text = stringResource(R.string.menu_watch_video_sub),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White.copy(alpha = 0.65f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -990,7 +967,7 @@ private fun WatchVideoCard(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                tint = Color.White.copy(alpha = 0.50f),
                 modifier = Modifier.size(16.dp),
             )
         }
@@ -1006,16 +983,18 @@ private fun QuickActionCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val scale = rememberGroupPressScale(interactionSource)
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = RoundedCornerShape(22.dp),
-        interactionSource = interactionSource,
-        modifier = modifier.graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        },
+    Box(
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clearLiquidGlass(shape = RoundedCornerShape(22.dp), interactive = true)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 12.dp),
@@ -1023,7 +1002,7 @@ private fun QuickActionCard(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary)
-            Text(label, style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(label, style = MaterialTheme.typography.labelLarge, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -1043,20 +1022,28 @@ private fun MenuActionRow(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val scale = rememberGroupPressScale(interactionSource)
-    val contentColor = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+    val contentColor = if (danger) MaterialTheme.colorScheme.error else Color.White
     val badgeColor = if (danger) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
     val badgeContentColor = if (danger) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
+    val shape = groupShape(position)
 
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = groupShape(position),
-        interactionSource = interactionSource,
-        modifier = Modifier.fillMaxWidth().graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        },
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clearLiquidGlass(
+                shape = shape,
+                interactive = true,
+                tintColor = if (danger) MaterialTheme.colorScheme.error.copy(alpha = 0.15f) else null,
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
@@ -1091,24 +1078,20 @@ private fun MenuInfoRow(
     position: GroupPosition = GroupPosition.SINGLE,
     onClick: (() -> Unit)? = null,
 ) {
-    Card(
-        onClick = onClick ?: {},
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = groupShape(position),
-        // Not actually interactive when there's no genre to open yet
-        // (still resolving, or resolution came back empty) — no ripple,
-        // no press feedback pretending there's something to tap.
-        enabled = onClick != null,
-        modifier = Modifier.fillMaxWidth(),
+    val shape = groupShape(position)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clearLiquidGlass(shape = shape, interactive = onClick != null)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(icon, contentDescription = null, tint = Color.White.copy(alpha = 0.70f))
             Spacer(Modifier.width(16.dp))
-            Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+            Text(text, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f), modifier = Modifier.weight(1f))
             if (loading) {
                 ExpressiveInlineLoadingIndicator(
                     modifier = Modifier.padding(start = 8.dp),
@@ -1116,7 +1099,7 @@ private fun MenuInfoRow(
                     strokeWidth = 2.dp,
                 )
             } else if (onClick != null) {
-                Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, tint = Color.White.copy(alpha = 0.60f), modifier = Modifier.size(14.dp))
             }
         }
     }

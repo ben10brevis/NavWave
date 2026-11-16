@@ -39,7 +39,7 @@ import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -569,7 +569,7 @@ fun SpotifyLoginScreen(
         }
 
         if (showManualDialog) {
-            AlertDialog(
+            GlassDialog(
                 onDismissRequest = { showManualDialog = false },
                 title = { Text("Manual sp_dc Entry") },
                 text = {

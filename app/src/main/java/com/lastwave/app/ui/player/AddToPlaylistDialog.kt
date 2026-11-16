@@ -166,31 +166,18 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassDialog
+import com.lastwave.app.ui.glass.clearLiquidGlass
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -402,7 +389,6 @@ internal fun AddToPlaylistDialog(
     var duplicatePlaylistIds by remember(track) { mutableStateOf(emptySet<Long>()) }
     var knownDuplicatePlaylistIds by remember(track) { mutableStateOf(emptySet<Long>()) }
     var isCheckingDuplicates by remember(track) { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     val trackKey = remember(track.title, track.artist) { track.toGeneratedTrack().key }
     val trackUrlNorm = remember(track.playbackUrl) {
@@ -472,7 +458,7 @@ internal fun AddToPlaylistDialog(
         val duplicatePlaylists = sanitizedPlaylists.filter { it.id in duplicates }
         if (duplicatePlaylists.size == 1) {
             val playlist = duplicatePlaylists.first()
-            AlertDialog(
+            GlassDialog(
                 onDismissRequest = { duplicateConfirmation = null },
                 title = { Text(stringResource(com.lastwave.app.R.string.add_dup_single_title)) },
                 text = {
@@ -501,7 +487,7 @@ internal fun AddToPlaylistDialog(
         }
 
         val missingCount = selectedPlaylistIds.size - duplicates.size
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { duplicateConfirmation = null },
             title = {
                 Text(stringResource(com.lastwave.app.R.string.add_dup_multi_title, duplicates.size))
@@ -522,22 +508,21 @@ internal fun AddToPlaylistDialog(
                         ) { _, playlist ->
                             val addAgain = playlist.id in duplicatePlaylistIds
                             val canAddAnother = playlist.mode != LIKED_SONGS_MODE
-                            Surface(
-                                onClick = {
-                                    duplicatePlaylistIds = if (addAgain) {
-                                        duplicatePlaylistIds - playlist.id
-                                    } else {
-                                        duplicatePlaylistIds + playlist.id
-                                    }
-                                },
-                                enabled = canAddAnother,
-                                shape = RoundedCornerShape(14.dp),
-                                color = if (addAgain) {
-                                    MaterialTheme.colorScheme.secondaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceContainerHigh
-                                },
-                                modifier = Modifier.fillMaxWidth(),
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clearLiquidGlass(
+                                        shape = RoundedCornerShape(14.dp),
+                                        tintColor = if (addAgain) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else null,
+                                        interactive = canAddAnother,
+                                    )
+                                    .clickable(enabled = canAddAnother) {
+                                        duplicatePlaylistIds = if (addAgain) {
+                                            duplicatePlaylistIds - playlist.id
+                                        } else {
+                                            duplicatePlaylistIds + playlist.id
+                                        }
+                                    },
                             ) {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -589,28 +574,13 @@ internal fun AddToPlaylistDialog(
         return
     }
 
-    ModalBottomSheet(
+    GlassBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        // Opaque sheet: player controls / quality pill behind must not bleed through.
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        scrimColor = Color.Black.copy(alpha = 0.55f),
-        contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
-        dragHandle = {
-            Surface(
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 8.dp)
-                    .size(width = 36.dp, height = 4.dp),
-            ) {}
-        },
     ) {
         var showCreateDialog by remember { mutableStateOf(false) }
 
         if (showCreateDialog) {
-            AlertDialog(
+            GlassDialog(
                 onDismissRequest = { showCreateDialog = false },
                 title = { Text(stringResource(com.lastwave.app.R.string.add_create_title)) },
                 text = {
@@ -764,15 +734,16 @@ internal fun AddToPlaylistDialog(
                                     selectedOfflineIds = if (selected) selectedOfflineIds - playlist.id else selectedOfflineIds + playlist.id
                                 },
                             ) {
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(48.dp),
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clearLiquidGlass(
+                                            shape = RoundedCornerShape(12.dp),
+                                            tintColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                        ),
+                                    contentAlignment = Alignment.Center,
                                 ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Filled.QueueMusic, contentDescription = null)
-                                    }
+                                    Icon(Icons.Filled.QueueMusic, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
                         }
@@ -787,7 +758,7 @@ internal fun AddToPlaylistDialog(
             ) {
                 TextButton(onClick = onDismiss) { Text(stringResource(com.lastwave.app.R.string.common_cancel)) }
                 Spacer(Modifier.width(8.dp))
-                Button(
+                GlassButton(
                     onClick = { submit() },
                     enabled = selectedCount > 0 && !isCheckingDuplicates,
                 ) {
@@ -834,19 +805,21 @@ private fun PlaylistPickRow(
     onClick: () -> Unit,
     cover: @Composable () -> Unit,
 ) {
-    val rowColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-        animationSpec = tween(ExpressiveMotion.Quick),
-        label = "playlistSelectionColor",
-    )
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
-        color = rowColor,
-        modifier = Modifier.fillMaxWidth(),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (selected) Modifier.clearLiquidGlass(
+                    shape = RoundedCornerShape(16.dp),
+                    tintColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                    interactive = true,
+                ) else Modifier
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 8.dp),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             cover()

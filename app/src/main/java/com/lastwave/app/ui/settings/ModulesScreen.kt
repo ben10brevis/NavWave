@@ -51,7 +51,7 @@ import com.lastwave.app.ui.player.MiniPlayerAwareSnackbarHost
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.mutableStateOf
@@ -94,7 +94,7 @@ fun ModulesScreen(
     }
 
     if (showAddonDialog) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showAddonDialog = false },
             title = { Text(if (editingAddonId == null) "Add Streaming Addon" else "Edit Streaming Addon") },
             text = {

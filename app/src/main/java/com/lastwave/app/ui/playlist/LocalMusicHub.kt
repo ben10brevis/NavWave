@@ -80,6 +80,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.GlassDialog
+import com.lastwave.app.ui.glass.clearLiquidGlass
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -1626,7 +1629,7 @@ fun LocalMusicHub(
     // Create Offline Playlist Dialog
     if (showCreatePlaylistDialog) {
         var nameInput by remember { mutableStateOf("") }
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = {
                 showCreatePlaylistDialog = false
                 createPlaylistSeedTracks = emptyList()
@@ -1670,7 +1673,7 @@ fun LocalMusicHub(
     // Rename Offline Playlist Dialog
     renamingPlaylist?.let { target ->
         var nameInput by remember(target.id) { mutableStateOf(target.name) }
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { renamingPlaylist = null },
             title = { Text(stringResource(R.string.local_rename_playlist)) },
             text = {
@@ -1703,7 +1706,7 @@ fun LocalMusicHub(
 
     // Delete Offline Playlist Confirmation
     deletingPlaylist?.let { target ->
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { deletingPlaylist = null },
             title = { Text(stringResource(R.string.local_delete_playlist)) },
             text = { Text(stringResource(R.string.local_delete_playlist_confirm, target.name)) },
@@ -2069,11 +2072,13 @@ private fun LocalSquareGridCard(
     onToggleLike: (() -> Unit)? = null,
     onMenu: (() -> Unit)? = null,
 ) {
-    Surface(
-        shape = RoundedCornerShape(18.dp),
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
-        else MaterialTheme.colorScheme.surfaceContainerHigh,
+    Box(
         modifier = modifier
+            .clearLiquidGlass(
+                shape = RoundedCornerShape(18.dp),
+                tintColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else null,
+                interactive = true,
+            )
             .clip(RoundedCornerShape(18.dp))
             .combinedClickable(
                 onClick = onClick,
@@ -2228,10 +2233,11 @@ private fun LocalPermissionCard(
     onGrantPermission: () -> Unit,
     onPickFolder: () -> Unit,
 ) {
-    Surface(
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clearLiquidGlass(shape = RoundedCornerShape(22.dp)),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -2261,10 +2267,11 @@ private fun LocalImportStatusCard(
     state: LocalMusicLibrary.ImportState,
     onAcknowledge: () -> Unit,
 ) {
-    Surface(
-        shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+            .clearLiquidGlass(shape = RoundedCornerShape(18.dp)),
     ) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             when (state) {
@@ -2388,13 +2395,8 @@ private fun LocalSourcesBottomSheet(
     onRescan: () -> Unit,
     onForgetFolder: (Uri) -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(
+    GlassBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
         EdgeToEdgeDialogWindow()
         Column(
@@ -2534,13 +2536,8 @@ private fun BatchOfflinePlaylistSheet(
     onPickPlaylist: (String) -> Unit,
     onRequestCreateNew: () -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(
+    GlassBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
         EdgeToEdgeDialogWindow()
         Column(

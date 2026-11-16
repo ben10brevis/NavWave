@@ -23,7 +23,7 @@ import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material3.AlertDialog
+import com.lastwave.app.ui.glass.GlassDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -130,7 +130,7 @@ fun StorageScreen(
     }
 
     if (showClearCacheDialog) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showClearCacheDialog = false },
             title = { Text(stringResource(R.string.storage_clear_cache_title)) },
             text = { Text(stringResource(R.string.storage_clear_cache_message)) },
@@ -149,7 +149,7 @@ fun StorageScreen(
     }
 
     if (showDeleteDownloadsDialog) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { showDeleteDownloadsDialog = false },
             title = { Text(stringResource(R.string.storage_delete_downloads_title)) },
             text = {
@@ -179,7 +179,7 @@ fun StorageScreen(
     }
 
     pendingCacheLimit?.let { newLimit ->
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = resetCacheLimitSelection,
             title = { Text(stringResource(R.string.storage_limit_warning_title)) },
             text = { Text(stringResource(R.string.storage_limit_warning)) },
