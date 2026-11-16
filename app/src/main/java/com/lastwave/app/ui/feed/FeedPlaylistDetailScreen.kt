@@ -45,6 +45,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassButtonVariant
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.theme.LocalIsDarkTheme
 import com.lastwave.app.data.music.YouTubeMusicTrack
 import com.lastwave.app.data.music.YouTubePlaylistResult
 import com.lastwave.app.ui.common.ArtworkImage
@@ -127,9 +131,11 @@ fun FeedPlaylistDetailScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(18.dp))
-                    FilledTonalButton(onClick = { viewModel.load(playlistId) }) {
-                        Text(stringResource(R.string.fpd_retry))
-                    }
+                    GlassButton(
+                        text = stringResource(R.string.fpd_retry),
+                        variant = GlassButtonVariant.Secondary,
+                        onClick = { viewModel.load(playlistId) },
+                    )
                 }
             }
 
@@ -140,9 +146,11 @@ fun FeedPlaylistDetailScreen(
                     Text(stringResource(R.string.fpd_loading_more), modifier = Modifier.padding(horizontal = 16.dp))
                 }
                 if (current.loadError != null) {
-                    FilledTonalButton(onClick = { viewModel.load(playlistId, force = true) }) {
-                        Text(stringResource(if (current.playlist.isComplete) R.string.fpd_retry else R.string.fpd_incomplete))
-                    }
+                    GlassButton(
+                        text = stringResource(if (current.playlist.isComplete) R.string.fpd_retry else R.string.fpd_incomplete),
+                        variant = GlassButtonVariant.Secondary,
+                        onClick = { viewModel.load(playlistId, force = true) },
+                    )
                 }
                 PlaylistContent(
                     playlist = current.playlist,
@@ -222,35 +230,33 @@ private fun PlaylistContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Button(
+                    GlassButton(
+                        text = stringResource(R.string.home_play),
+                        icon = Icons.Filled.PlayArrow,
+                        variant = GlassButtonVariant.Primary,
                         onClick = { onPlay(0) },
                         modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(Icons.Filled.PlayArrow, contentDescription = null)
-                        Spacer(Modifier.width(6.dp))
-                        Text(stringResource(R.string.home_play))
-                    }
-                    FilledTonalButton(
+                    )
+                    GlassButton(
+                        text = stringResource(R.string.feed_shuffle),
+                        icon = Icons.Filled.Shuffle,
+                        variant = GlassButtonVariant.Secondary,
                         onClick = onShuffle,
                         modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(Icons.Filled.Shuffle, contentDescription = null)
-                        Spacer(Modifier.width(6.dp))
-                        Text(stringResource(R.string.feed_shuffle))
-                    }
+                    )
                 }
-                Spacer(Modifier.height(18.dp))
-                FilledTonalButton(
-                    onClick = onSave,
-                    enabled = !isSaving && !savedToLibrary,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(when {
+                Spacer(Modifier.height(14.dp))
+                GlassButton(
+                    text = when {
                         isSaving -> "Saving…"
                         savedToLibrary -> "Saved to library"
                         else -> "Save to library"
-                    })
-                }
+                    },
+                    variant = GlassButtonVariant.Secondary,
+                    onClick = onSave,
+                    enabled = !isSaving && !savedToLibrary,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 saveError?.let { message ->
                     Text(message, color = MaterialTheme.colorScheme.error)
                 }

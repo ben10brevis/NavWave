@@ -83,6 +83,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassCard
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.theme.LocalIsDarkTheme
 import com.lastwave.app.data.model.ArtistAlbumItem
 import com.lastwave.app.playback.PlayableTrack
 import com.lastwave.app.ui.common.ArtworkImage
@@ -262,22 +268,13 @@ fun AlbumDetailScreen(
                                         verticalArrangement = Arrangement.spacedBy(4.dp),
                                     ) {
                                         splitArtists.forEach { artName ->
-                                            Surface(
+                                            GlassChip(
+                                                text = artName,
                                                 onClick = {
                                                     haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                                     onOpenArtist(artName, if (splitArtists.size == 1) data.artistBrowseId else null)
                                                 },
-                                                shape = RoundedCornerShape(12.dp),
-                                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-                                            ) {
-                                                Text(
-                                                    text = artName,
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                    fontWeight = FontWeight.Bold,
-                                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                                )
-                                            }
+                                            )
                                         }
                                     }
 
@@ -293,16 +290,16 @@ fun AlbumDetailScreen(
                                             text = metaText,
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Medium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            color = (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface).copy(alpha = 0.65f),
                                         )
                                     }
                                 }
 
                                 if (isAlbumPlaying) {
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
-                                        modifier = Modifier.padding(start = 12.dp, bottom = 4.dp),
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(start = 12.dp, bottom = 4.dp)
+                                            .clearLiquidGlass(shape = RoundedCornerShape(12.dp), interactive = false),
                                     ) {
                                         PlayingWaveBars(
                                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -325,69 +322,46 @@ fun AlbumDetailScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    FilledTonalIconButton(
+                                    GlassIconButton(
+                                        imageVector = Icons.Filled.Shuffle,
+                                        contentDescription = stringResource(R.string.alb_shuffle_cd),
+                                        size = 50.dp,
+                                        iconSize = 22.dp,
+                                        enabled = data.tracks.isNotEmpty(),
+                                        tint = MaterialTheme.colorScheme.primary,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                             viewModel.playShuffle()
                                         },
-                                        enabled = data.tracks.isNotEmpty(),
-                                        shape = CircleShape,
-                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        ),
-                                        modifier = Modifier.size(50.dp),
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Shuffle,
-                                            contentDescription = stringResource(R.string.alb_shuffle_cd),
-                                            modifier = Modifier.size(22.dp),
-                                            tint = MaterialTheme.colorScheme.primary,
-                                        )
-                                    }
+                                    )
 
-                                    FilledTonalIconButton(
+                                    GlassIconButton(
+                                        imageVector = if (saveState.savedToLibrary) Icons.Filled.Check else Icons.Filled.BookmarkAdd,
+                                        contentDescription = if (saveState.savedToLibrary) "Saved to library" else "Save album to library",
+                                        size = 50.dp,
+                                        iconSize = 22.dp,
+                                        enabled = !saveState.isSaving && !saveState.savedToLibrary && data.tracks.isNotEmpty(),
+                                        tint = if (saveState.savedToLibrary) MaterialTheme.colorScheme.primary else (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface),
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                             viewModel.saveToLibrary()
                                         },
-                                        enabled = !saveState.isSaving && !saveState.savedToLibrary && data.tracks.isNotEmpty(),
-                                        shape = CircleShape,
-                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                            containerColor = if (saveState.savedToLibrary) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
-                                        ),
-                                        modifier = Modifier.size(50.dp),
-                                    ) {
-                                        Icon(
-                                            if (saveState.savedToLibrary) Icons.Filled.Check else Icons.Filled.BookmarkAdd,
-                                            contentDescription = if (saveState.savedToLibrary) "Saved to library" else "Save album to library",
-                                            modifier = Modifier.size(22.dp),
-                                            tint = if (saveState.savedToLibrary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
-                                        )
-                                    }
+                                    )
                                 }
 
                                 // Large Floating Primary Play Button (56dp circle)
-                                Surface(
+                                GlassIconButton(
+                                    imageVector = if (isAlbumPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                    contentDescription = stringResource(R.string.alb_play_cd),
+                                    size = 56.dp,
+                                    iconSize = 30.dp,
+                                    enabled = data.tracks.isNotEmpty(),
+                                    tint = MaterialTheme.colorScheme.primary,
                                     onClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                         viewModel.playAll()
                                     },
-                                    enabled = data.tracks.isNotEmpty(),
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                                    shadowElevation = 6.dp,
-                                    modifier = Modifier.size(56.dp),
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            if (isAlbumPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                            contentDescription = stringResource(R.string.alb_play_cd),
-                                            tint = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.size(30.dp),
-                                        )
-                                    }
-                                }
+                                )
                             }
 
                             saveState.saveError?.let { message ->
@@ -446,12 +420,14 @@ fun AlbumDetailScreen(
                             playbackState.current?.title.equals(track.title, ignoreCase = true) &&
                             (playbackState.current?.artist.isNullOrBlank() || playbackState.current?.artist.equals(track.artist, ignoreCase = true))
 
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (isPlayingThis) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-                            else MaterialTheme.colorScheme.surfaceContainerLow,
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clearLiquidGlass(
+                                    shape = RoundedCornerShape(16.dp),
+                                    tintColor = if (isPlayingThis) MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
+                                    else Color.White.copy(alpha = 0.05f),
+                                )
                                 .clickable {
                                     haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                     viewModel.playAll(startIndex = index)
@@ -515,20 +491,16 @@ fun AlbumDetailScreen(
                                     )
                                 }
 
-                                IconButton(
+                                GlassIconButton(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = stringResource(R.string.dl_options_cd),
+                                    size = 36.dp,
+                                    iconSize = 20.dp,
                                     onClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                         selectedTrackMenu = track
                                     },
-                                    modifier = Modifier.size(36.dp),
-                                ) {
-                                    Icon(
-                                        Icons.Filled.MoreVert,
-                                        contentDescription = stringResource(R.string.dl_options_cd),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(20.dp),
-                                    )
-                                }
+                                )
                             }
                         }
                     }
@@ -537,12 +509,11 @@ fun AlbumDetailScreen(
                     // 4. Description / Wiki Card
                     if (!data.description.isNullOrBlank()) {
                         item(key = "album_description") {
-                            Card(
+                            GlassCard(
                                 shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                                 modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                             ) {
-                                Column(Modifier.padding(16.dp)) {
+                                Column(Modifier.padding(4.dp)) {
                                     Text(
                                         text = "About this Album",
                                         style = MaterialTheme.typography.titleSmall,
@@ -553,7 +524,7 @@ fun AlbumDetailScreen(
                                     Text(
                                         text = data.description,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        color = (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface).copy(alpha = 0.75f),
                                         lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
                                     )
                                 }
@@ -568,6 +539,7 @@ fun AlbumDetailScreen(
                                 text = "More by ${data.artist}",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
+                                color = if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.padding(top = 10.dp),
                             )
                         }
@@ -596,25 +568,17 @@ fun AlbumDetailScreen(
             }
         }
 
-        val topBarBg by animateColorAsState(
-            targetValue = if (showScrolledHeader) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.98f) else Color.Transparent,
-            animationSpec = tween(260),
-            label = "topBarBg",
-        )
-        val topBarElevation by animateDpAsState(
-            targetValue = if (showScrolledHeader) 6.dp else 0.dp,
-            animationSpec = tween(260),
-            label = "topBarElevation",
-        )
-
-        Surface(
-            color = topBarBg,
-            tonalElevation = topBarElevation,
-            shadowElevation = topBarElevation,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .zIndex(10f)
-                .align(Alignment.TopCenter),
+                .align(Alignment.TopCenter)
+                .clearLiquidGlass(
+                    shape = RectangleShape,
+                    customBlurDp = if (showScrolledHeader) 24.dp else 0.dp,
+                    tintColor = if (showScrolledHeader) null else Color.Transparent,
+                    interactive = false,
+                ),
         ) {
             Row(
                 modifier = Modifier
@@ -625,25 +589,16 @@ fun AlbumDetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(
+                GlassIconButton(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.pd_back_cd),
+                    size = 42.dp,
+                    iconSize = 22.dp,
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                         onBack()
                     },
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(
-                            if (showScrolledHeader || uiState !is AlbumUiState.Success) Color.Transparent else Color.Black.copy(alpha = 0.38f),
-                            CircleShape,
-                        ),
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.pd_back_cd),
-                        tint = if (showScrolledHeader || uiState !is AlbumUiState.Success) MaterialTheme.colorScheme.onSurface else Color.White,
-                        modifier = Modifier.size(22.dp),
-                    )
-                }
+                )
 
                 Row(
                     modifier = Modifier
@@ -720,13 +675,12 @@ private fun AlbumCard(
     item: ArtistAlbumItem,
     onClick: () -> Unit,
 ) {
-    Card(
+    GlassCard(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        contentPadding = 10.dp,
         modifier = Modifier.width(150.dp),
     ) {
-        Column(Modifier.padding(10.dp)) {
             Box(
                 modifier = Modifier
                     .size(130.dp)
@@ -775,4 +729,3 @@ private fun AlbumCard(
             )
         }
     }
-}

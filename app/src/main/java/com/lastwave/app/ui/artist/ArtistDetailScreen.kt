@@ -103,6 +103,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassCard
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.theme.LocalIsDarkTheme
 import coil.compose.AsyncImage
 import com.lastwave.app.data.model.ArtistAlbumItem
 import com.lastwave.app.data.model.ArtistPageData
@@ -345,26 +351,26 @@ fun ArtistDetailScreen(
 
                                     if (!data.subscribers.isNullOrBlank() || !data.monthlyListeners.isNullOrBlank()) {
                                         Spacer(Modifier.height(6.dp))
-                                        Surface(
-                                            shape = RoundedCornerShape(50),
-                                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.12f),
+                                        Box(
+                                            modifier = Modifier
+                                                .clearLiquidGlass(shape = CircleShape, interactive = false)
+                                                .padding(horizontal = 12.dp, vertical = 4.dp),
                                         ) {
                                             Text(
                                                 text = data.subscribers ?: data.monthlyListeners.orEmpty(),
                                                 style = MaterialTheme.typography.labelMedium,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = MaterialTheme.colorScheme.onBackground,
-                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                                color = if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onBackground,
                                             )
                                         }
                                     }
                                 }
 
                                 if (isArtistPlaying) {
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
-                                        modifier = Modifier.padding(start = 12.dp, bottom = 4.dp),
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(start = 12.dp, bottom = 4.dp)
+                                            .clearLiquidGlass(shape = RoundedCornerShape(12.dp), interactive = false),
                                     ) {
                                         PlayingWaveBars(
                                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -387,68 +393,45 @@ fun ArtistDetailScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    FilledTonalIconButton(
+                                    GlassIconButton(
+                                        imageVector = Icons.Filled.Shuffle,
+                                        contentDescription = stringResource(R.string.art_shuffle_cd),
+                                        size = 48.dp,
+                                        iconSize = 22.dp,
+                                        enabled = data.topSongs.isNotEmpty(),
+                                        tint = MaterialTheme.colorScheme.primary,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                             viewModel.playShuffle()
                                         },
-                                        enabled = data.topSongs.isNotEmpty(),
-                                        shape = CircleShape,
-                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        ),
-                                        modifier = Modifier.size(48.dp),
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Shuffle,
-                                            contentDescription = stringResource(R.string.art_shuffle_cd),
-                                            modifier = Modifier.size(22.dp),
-                                            tint = MaterialTheme.colorScheme.primary,
-                                        )
-                                    }
+                                    )
 
-                                    FilledTonalIconButton(
+                                    GlassIconButton(
+                                        imageVector = Icons.Filled.Radio,
+                                        contentDescription = stringResource(R.string.art_radio_cd),
+                                        size = 48.dp,
+                                        iconSize = 22.dp,
+                                        tint = MaterialTheme.colorScheme.primary,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                             viewModel.startArtistMix()
                                         },
-                                        shape = CircleShape,
-                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        ),
-                                        modifier = Modifier.size(48.dp),
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Radio,
-                                            contentDescription = stringResource(R.string.art_radio_cd),
-                                            modifier = Modifier.size(22.dp),
-                                            tint = MaterialTheme.colorScheme.primary,
-                                        )
-                                    }
+                                    )
                                 }
 
                                 // Large Floating Primary Play Button (56dp circle)
-                                Surface(
+                                GlassIconButton(
+                                    imageVector = if (isArtistPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                    contentDescription = stringResource(R.string.art_play_cd),
+                                    size = 56.dp,
+                                    iconSize = 30.dp,
+                                    enabled = data.topSongs.isNotEmpty(),
+                                    tint = MaterialTheme.colorScheme.primary,
                                     onClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                         viewModel.playAll()
                                     },
-                                    enabled = data.topSongs.isNotEmpty(),
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                                    shadowElevation = 6.dp,
-                                    modifier = Modifier.size(56.dp),
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            if (isArtistPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                            contentDescription = stringResource(R.string.art_play_cd),
-                                            tint = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.size(30.dp),
-                                        )
-                                    }
-                                }
+                                )
                             }
                         }
                     }
@@ -564,16 +547,18 @@ fun ArtistDetailScreen(
                                 playbackState.current?.title.equals(track.title, ignoreCase = true) &&
                                 playbackState.current?.artist.equals(track.artist, ignoreCase = true)
 
-                            Surface(
-                                shape = RoundedCornerShape(16.dp),
-                                color = if (isPlayingThis) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-                                else MaterialTheme.colorScheme.surfaceContainerLow,
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .adaptiveContentWidth(maxWidth = 860.dp)
                                     .padding(horizontal = 20.dp)
+                                    .clearLiquidGlass(
+                                        shape = RoundedCornerShape(16.dp),
+                                        interactive = true,
+                                        tintColor = if (isPlayingThis) MaterialTheme.colorScheme.primary.copy(alpha = 0.22f) else null,
+                                    )
                                     .clickable {
-                                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
                                         val fullIndex = data.topSongs.indexOf(track).takeIf { it >= 0 } ?: index
                                         viewModel.playAll(startIndex = fullIndex)
                                     },
@@ -615,7 +600,7 @@ fun ArtistDetailScreen(
                                             text = track.title,
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontWeight = if (isPlayingThis) FontWeight.Bold else FontWeight.SemiBold,
-                                            color = if (isPlayingThis) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                            color = if (isPlayingThis) MaterialTheme.colorScheme.primary else (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
@@ -623,7 +608,7 @@ fun ArtistDetailScreen(
                                         Text(
                                             text = track.album ?: com.lastwave.app.util.ArtistHelper.primaryArtist(track.artist).ifBlank { com.lastwave.app.util.ArtistHelper.primaryArtist(data.name) },
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            color = (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface).copy(alpha = 0.65f),
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
@@ -639,7 +624,7 @@ fun ArtistDetailScreen(
                                         Icon(
                                             Icons.Filled.MoreVert,
                                             contentDescription = stringResource(R.string.dl_options_cd),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            tint = (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface).copy(alpha = 0.7f),
                                             modifier = Modifier.size(20.dp),
                                         )
                                     }
@@ -656,16 +641,19 @@ fun ArtistDetailScreen(
                                         .padding(horizontal = 20.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.Center,
                                 ) {
-                                    Surface(
-                                        onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                            showAllSongs = !showAllSongs
-                                        },
-                                        shape = RoundedCornerShape(24.dp),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    Box(
+                                        modifier = Modifier
+                                            .clearLiquidGlass(
+                                                shape = CircleShape,
+                                                interactive = true,
+                                            )
+                                            .clickable {
+                                                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                                showAllSongs = !showAllSongs
+                                            }
+                                            .padding(horizontal = 20.dp, vertical = 10.dp),
                                     ) {
                                         Row(
-                                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         ) {
@@ -814,25 +802,17 @@ fun ArtistDetailScreen(
             }
         }
 
-        val topBarBg by animateColorAsState(
-            targetValue = if (showScrolledHeader) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.98f) else Color.Transparent,
-            animationSpec = tween(260),
-            label = "topBarBg",
-        )
-        val topBarElevation by animateDpAsState(
-            targetValue = if (showScrolledHeader) 6.dp else 0.dp,
-            animationSpec = tween(260),
-            label = "topBarElevation",
-        )
-
-        Surface(
-            color = topBarBg,
-            tonalElevation = topBarElevation,
-            shadowElevation = topBarElevation,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .zIndex(10f)
-                .align(Alignment.TopCenter),
+                .align(Alignment.TopCenter)
+                .clearLiquidGlass(
+                    shape = RectangleShape,
+                    customBlurDp = if (showScrolledHeader) 24.dp else 0.dp,
+                    tintColor = if (showScrolledHeader) null else Color.Transparent,
+                    interactive = false,
+                ),
         ) {
             Row(
                 modifier = Modifier
@@ -843,25 +823,16 @@ fun ArtistDetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(
+                GlassIconButton(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.pd_back_cd),
+                    size = 42.dp,
+                    iconSize = 22.dp,
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                         onBack()
                     },
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(
-                            if (showScrolledHeader || uiState !is ArtistUiState.Success) Color.Transparent else Color.Black.copy(alpha = 0.38f),
-                            CircleShape,
-                        ),
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.pd_back_cd),
-                        tint = if (showScrolledHeader || uiState !is ArtistUiState.Success) MaterialTheme.colorScheme.onSurface else Color.White,
-                        modifier = Modifier.size(22.dp),
-                    )
-                }
+                )
 
                 Row(
                     modifier = Modifier
@@ -910,42 +881,35 @@ fun ArtistDetailScreen(
                 ) {
                     // Translucent Actions Pill for Canvas motion when available
                     if (isAppleMotion && !motionVideoUrl.isNullOrBlank()) {
-                        Surface(
-                            shape = RoundedCornerShape(50),
-                            color = if (showScrolledHeader) Color.Transparent else Color.Black.copy(alpha = 0.38f),
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier
+                                .clearLiquidGlass(shape = CircleShape)
+                                .padding(2.dp),
                         ) {
-                            Row {
-                                if (hasVideoAnimation) {
-                                    IconButton(
-                                        onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                            showFullscreenMotion = true
-                                        },
-                                        modifier = Modifier.size(42.dp),
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Fullscreen,
-                                            contentDescription = "Expand Fullscreen",
-                                            tint = if (showScrolledHeader) MaterialTheme.colorScheme.onSurface else Color.White,
-                                            modifier = Modifier.size(22.dp),
-                                        )
-                                    }
-                                }
-                                IconButton(
+                            if (hasVideoAnimation) {
+                                GlassIconButton(
+                                    imageVector = Icons.Filled.Fullscreen,
+                                    contentDescription = "Expand Fullscreen",
+                                    size = 38.dp,
+                                    iconSize = 20.dp,
                                     onClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                        showHeaderVideo = !showHeaderVideo
+                                        showFullscreenMotion = true
                                     },
-                                    modifier = Modifier.size(42.dp),
-                                ) {
-                                    Icon(
-                                        imageVector = if (showHeaderVideo) Icons.Filled.SmartDisplay else Icons.Filled.Image,
-                                        contentDescription = if (showHeaderVideo) "Show Photo" else "Show Motion Video",
-                                        tint = if (showHeaderVideo) MaterialTheme.colorScheme.primary else if (showScrolledHeader) MaterialTheme.colorScheme.onSurface else Color.White,
-                                        modifier = Modifier.size(20.dp),
-                                    )
-                                }
+                                )
                             }
+                            GlassIconButton(
+                                imageVector = if (showHeaderVideo) Icons.Filled.SmartDisplay else Icons.Filled.Image,
+                                contentDescription = if (showHeaderVideo) "Show Photo" else "Show Motion Video",
+                                size = 38.dp,
+                                iconSize = 20.dp,
+                                tint = if (showHeaderVideo) MaterialTheme.colorScheme.primary else (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface),
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    showHeaderVideo = !showHeaderVideo
+                                },
+                            )
                         }
                     }
 
@@ -1173,13 +1137,13 @@ private fun ArtistAlbumCard(
     item: ArtistAlbumItem,
     onClick: () -> Unit,
 ) {
-    Card(
+    GlassCard(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        contentPadding = 10.dp,
         modifier = Modifier.width(150.dp),
     ) {
-        Column(Modifier.padding(10.dp)) {
+        Column {
             Box(
                 modifier = Modifier
                     .size(130.dp)
@@ -1193,19 +1157,18 @@ private fun ArtistAlbumCard(
                     modifier = Modifier.fillMaxSize(),
                 )
                 if (!item.year.isNullOrBlank()) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color.Black.copy(alpha = 0.65f),
+                    Box(
                         modifier = Modifier
                             .align(Alignment.BottomStart)
-                            .padding(6.dp),
+                            .padding(6.dp)
+                            .clearLiquidGlass(shape = RoundedCornerShape(8.dp), interactive = false)
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
                     ) {
                         Text(
                             text = item.year,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         )
                     }
                 }
@@ -1217,6 +1180,7 @@ private fun ArtistAlbumCard(
                 text = item.title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
+                color = if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -1227,7 +1191,7 @@ private fun ArtistAlbumCard(
                     else -> stringResource(R.string.art_type_album)
                 },
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface).copy(alpha = 0.65f),
                 maxLines = 1,
             )
         }
@@ -1239,14 +1203,14 @@ private fun SimilarArtistCard(
     artist: ArtistSummaryItem,
     onClick: () -> Unit,
 ) {
-    Card(
+    GlassCard(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        contentPadding = 10.dp,
         modifier = Modifier.width(130.dp),
     ) {
         Column(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
@@ -1262,14 +1226,13 @@ private fun SimilarArtistCard(
                         modifier = Modifier.fillMaxSize(),
                     )
                 } else {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        modifier = Modifier.fillMaxSize(),
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clearLiquidGlass(shape = CircleShape, interactive = false),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        }
+                        Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -1280,6 +1243,7 @@ private fun SimilarArtistCard(
                 text = com.lastwave.app.util.ArtistHelper.primaryArtist(artist.name),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
+                color = if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

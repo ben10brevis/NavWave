@@ -29,6 +29,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.foundation.clickable
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.theme.LocalIsDarkTheme
 import androidx.compose.material3.ripple
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -240,25 +243,30 @@ fun ExpressiveGroupRow(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val scale = rememberGroupPressScale(interactionSource)
-    val titleColor = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+    val haptic = LocalHapticFeedback.current
+    val isDark = LocalIsDarkTheme.current
+    val titleColor = if (danger) MaterialTheme.colorScheme.error else (if (isDark) Color.White else MaterialTheme.colorScheme.onSurface)
     val shape = groupShape(position)
 
-    Card(
-        onClick = onClick,
-        shape = shape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-        // 0dp deliberately: Material3's Card blends a primary-tinted alpha
-        // layer on top of containerColor above 0dp tonalElevation, which
-        // read as a second, unintended layer behind these rows' own tonal
-        // icon badges (the same bug fixed earlier in Settings/Generator).
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        interactionSource = interactionSource,
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            },
+            }
+            .clearLiquidGlass(
+                shape = shape,
+                interactive = true,
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    onClick()
+                },
+            ),
     ) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 12.dp),
@@ -279,7 +287,7 @@ fun ExpressiveGroupRow(
                     Text(
                         it,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = (if (isDark) Color.White else MaterialTheme.colorScheme.onSurfaceVariant).copy(alpha = 0.65f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -291,7 +299,7 @@ fun ExpressiveGroupRow(
                 Icon(
                     Icons.Filled.ChevronRight,
                     contentDescription = null,
-                    tint = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = if (danger) MaterialTheme.colorScheme.error else (if (isDark) Color.White.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
         }
@@ -320,24 +328,28 @@ fun ExpressiveGroupTrackRow(
     val scale = rememberGroupPressScale(interactionSource)
     val haptics = LocalHapticFeedback.current
     val shape = groupShape(position)
-    val playingContainer = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+    val isDark = LocalIsDarkTheme.current
+    val tintColor = if (isPlaying) MaterialTheme.colorScheme.primary.copy(alpha = 0.22f) else null
 
-    Card(
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isPlaying) playingContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
+            .clearLiquidGlass(
+                shape = shape,
+                interactive = true,
+                tintColor = tintColor,
+            )
             .combinedClickable(
                 interactionSource = interactionSource,
-                indication = androidx.compose.material3.ripple(),
-                onClick = onClick,
+                indication = null,
+                onClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    onClick()
+                },
                 onLongClick = onLongClick?.let {
                     {
                         haptics.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -358,7 +370,7 @@ fun ExpressiveGroupTrackRow(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = if (isPlaying) FontWeight.Bold else FontWeight.Medium,
                     color = if (isPlaying) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurface,
+                    else (if (isDark) Color.White else MaterialTheme.colorScheme.onSurface),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -366,7 +378,7 @@ fun ExpressiveGroupTrackRow(
                     subtitle,
                     style = MaterialTheme.typography.bodySmall,
                     color = if (isPlaying) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    else (if (isDark) Color.White else MaterialTheme.colorScheme.onSurface).copy(alpha = 0.65f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -436,29 +448,31 @@ fun ExpressiveGroupSelectRow(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val scale = rememberGroupPressScale(interactionSource)
+    val haptics = LocalHapticFeedback.current
     val shape = groupShape(position)
-    val containerColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerHigh
-        },
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "groupSelectRowBg",
-    )
+    val isDark = LocalIsDarkTheme.current
+    val tintColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.22f) else null
 
-    Card(
-        onClick = onClick,
-        shape = shape,
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        interactionSource = interactionSource,
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            },
+            }
+            .clearLiquidGlass(
+                shape = shape,
+                interactive = true,
+                tintColor = tintColor,
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    onClick()
+                },
+            ),
     ) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(horizontal = 16.dp, vertical = 14.dp),

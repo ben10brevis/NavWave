@@ -23,6 +23,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
@@ -78,6 +79,12 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.rounded.MyLocation
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassButtonVariant
+import com.lastwave.app.ui.glass.GlassDialog
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.theme.LocalIsDarkTheme
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -465,7 +472,16 @@ fun PlaylistDetailScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         // Circular Shuffle Button
-                        FilledTonalIconButton(
+                        GlassIconButton(
+                            imageVector = Icons.Filled.Shuffle,
+                            contentDescription = stringResource(com.lastwave.app.R.string.pd_shuffle_cd),
+                            size = 50.dp,
+                            iconSize = 22.dp,
+                            tint = if (isThisPlaylistPlaying && playbackState.shuffleEnabled) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface
+                            },
                             onClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                 if (isThisPlaylistPlaying) {
@@ -481,33 +497,13 @@ fun PlaylistDetailScreen(
                                     )
                                 }
                             },
-                            shape = CircleShape,
-                            colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                containerColor = if (isThisPlaylistPlaying && playbackState.shuffleEnabled) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.secondaryContainer
-                                },
-                                contentColor = if (isThisPlaylistPlaying && playbackState.shuffleEnabled) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSecondaryContainer
-                                },
-                            ),
-                            modifier = Modifier.size(50.dp),
-                        ) {
-                            Icon(Icons.Filled.Shuffle, contentDescription = stringResource(com.lastwave.app.R.string.pd_shuffle_cd), modifier = Modifier.size(22.dp))
-                        }
-                        // Prominent Center Play / Playing Pill Button with Spring Physics
-                        val playInteractionSource = remember { MutableInteractionSource() }
-                        val isPlayPressed by playInteractionSource.collectIsPressedAsState()
-                        val playScale by animateFloatAsState(
-                            targetValue = if (isPlayPressed) 0.92f else 1f,
-                            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
-                            label = "heroPlayScale",
                         )
 
-                        Button(
+                        // Prominent Center Play / Playing Pill Button with Spring Physics
+                        GlassButton(
+                            text = if (isThisPlaylistPlaying) stringResource(com.lastwave.app.R.string.pd_playing) else stringResource(com.lastwave.app.R.string.pd_play),
+                            icon = if (isThisPlaylistPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                            variant = GlassButtonVariant.Primary,
                             onClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                 if (displayTracks.isNotEmpty()) {
@@ -518,35 +514,17 @@ fun PlaylistDetailScreen(
                                     )
                                 }
                             },
-                            interactionSource = playInteractionSource,
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary,
-                            ),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp, pressedElevation = 8.dp),
                             modifier = Modifier
                                 .height(50.dp)
-                                .padding(horizontal = 4.dp)
-                                .graphicsLayer {
-                                    scaleX = playScale
-                                    scaleY = playScale
-                                },
-                        ) {
-                            Icon(
-                                if (isThisPlaylistPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                contentDescription = null,
-                                modifier = Modifier.size(26.dp),
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                if (isThisPlaylistPlaying) stringResource(com.lastwave.app.R.string.pd_playing) else stringResource(com.lastwave.app.R.string.pd_play),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
+                                .padding(horizontal = 4.dp),
+                        )
+
                         // Locate current song
-                        FilledTonalIconButton(
+                        GlassIconButton(
+                            imageVector = Icons.Rounded.MyLocation,
+                            contentDescription = stringResource(com.lastwave.app.R.string.pd_locate_cd),
+                            size = 50.dp,
+                            iconSize = 22.dp,
                             onClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                 val playingTrack = playbackState.current
@@ -557,19 +535,12 @@ fun PlaylistDetailScreen(
                                     }
                                 }
                             },
-                            shape = CircleShape,
-                            colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            ),
-                            modifier = Modifier.size(50.dp),
-                        ) {
-                            Icon(Icons.Rounded.MyLocation, contentDescription = stringResource(com.lastwave.app.R.string.pd_locate_cd), modifier = Modifier.size(22.dp))
-                        }
+                        )
                     }
 
                     Spacer(Modifier.height(18.dp))
 
-                        // Sort Filter Pill & Lock Icon Row (Custom order, Date added, Name, Artist, Play time)
+                    // Sort Filter Pill & Lock Icon Row (Custom order, Date added, Name, Artist, Play time)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -578,32 +549,33 @@ fun PlaylistDetailScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box {
-                            Surface(
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                    sortMenuOpen = true
-                                },
-                                shape = RoundedCornerShape(50),
-                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f),
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                tonalElevation = 2.dp,
+                            Row(
+                                modifier = Modifier
+                                    .clearLiquidGlass(shape = CircleShape, interactive = true)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                        onClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                            sortMenuOpen = true
+                                        },
+                                    )
+                                    .padding(horizontal = 16.dp, vertical = 9.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                ) {
-                                    Text(
-                                        text = stringResource(currentSort.labelRes),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                    Icon(
-                                        imageVector = if (sortAscending) Icons.Filled.ArrowUpward else Icons.Filled.ArrowDownward,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                    )
-                                }
+                                Text(
+                                    text = stringResource(currentSort.labelRes),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface,
+                                )
+                                Icon(
+                                    imageVector = if (sortAscending) Icons.Filled.ArrowUpward else Icons.Filled.ArrowDownward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (LocalIsDarkTheme.current) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurface,
+                                )
                             }
 
                             DropdownMenu(
@@ -918,25 +890,17 @@ fun PlaylistDetailScreen(
             }
         }
 
-        // 2. Floating Top Bar with Frosted Glass styling & Smooth Scrolled Header
-        val topBarBg by animateColorAsState(
-            targetValue = if (showScrolledHeader) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.98f) else Color.Transparent,
-            animationSpec = tween(260),
-            label = "topBarBg",
-        )
-        val topBarElevation by animateDpAsState(
-            targetValue = if (showScrolledHeader) 6.dp else 0.dp,
-            animationSpec = tween(260),
-            label = "topBarElevation",
-        )
-
-        Surface(
-            color = topBarBg,
-            tonalElevation = topBarElevation,
-            shadowElevation = topBarElevation,
+        // 2. Floating Top Bar with Clear Liquid Glass styling & Smooth Scrolled Header
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.TopCenter),
+                .align(Alignment.TopCenter)
+                .clearLiquidGlass(
+                    shape = RectangleShape,
+                    customBlurDp = if (showScrolledHeader) 24.dp else 0.dp,
+                    tintColor = if (showScrolledHeader) null else Color.Transparent,
+                    interactive = false,
+                ),
         ) {
             Row(
                 modifier = Modifier
@@ -948,25 +912,16 @@ fun PlaylistDetailScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Circular back button
-                IconButton(
+                GlassIconButton(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(com.lastwave.app.R.string.pd_back_cd),
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                         onBack()
                     },
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(
-                            if (showScrolledHeader) Color.Transparent else Color.Black.copy(alpha = 0.38f),
-                            CircleShape,
-                        ),
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(com.lastwave.app.R.string.pd_back_cd),
-                        tint = if (showScrolledHeader) MaterialTheme.colorScheme.onSurface else Color.White,
-                        modifier = Modifier.size(22.dp),
-                    )
-                }
+                    size = 42.dp,
+                    iconSize = 22.dp,
+                )
 
                 Row(
                     modifier = Modifier
@@ -988,12 +943,11 @@ fun PlaylistDetailScreen(
                                 )
                             }
                             Spacer(Modifier.width(10.dp))
-                            // Removed LocationOn icon
-                            Spacer(Modifier.width(6.dp))
                             Text(
                                 text = playlist.title,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
+                                color = if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
@@ -1006,7 +960,11 @@ fun PlaylistDetailScreen(
                     enter = fadeIn() + scaleIn(),
                     exit = fadeOut() + scaleOut(),
                 ) {
-                    FilledTonalIconButton(
+                    GlassIconButton(
+                        imageVector = Icons.Rounded.MyLocation,
+                        contentDescription = stringResource(com.lastwave.app.R.string.pd_locate_cd),
+                        size = 38.dp,
+                        iconSize = 18.dp,
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                             val playingTrack = playbackState.current
@@ -1017,52 +975,36 @@ fun PlaylistDetailScreen(
                                 }
                             }
                         },
-                        shape = CircleShape,
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        ),
-                        modifier = Modifier.size(38.dp),
-                    ) {
-                        Icon(Icons.Rounded.MyLocation, contentDescription = stringResource(com.lastwave.app.R.string.pd_locate_cd), modifier = Modifier.size(16.dp))
-                    }
+                    )
                 }
 
                 Spacer(Modifier.width(6.dp))
 
                 // Translucent Actions Pill (Search / More Menu)
-                Surface(
-                    shape = RoundedCornerShape(50),
-                    color = if (showScrolledHeader) Color.Transparent else Color.Black.copy(alpha = 0.38f),
-                ) {
-                    Row {
-                        IconButton(
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    GlassIconButton(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = stringResource(com.lastwave.app.R.string.pd_search_cd),
+                        size = 42.dp,
+                        iconSize = 20.dp,
+                        tint = if (isSearchActive) MaterialTheme.colorScheme.primary else (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface),
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                            isSearchActive = !isSearchActive
+                            if (!isSearchActive) searchQuery = ""
+                        },
+                    )
+                    Box {
+                        GlassIconButton(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(com.lastwave.app.R.string.pd_options_cd),
+                            size = 42.dp,
+                            iconSize = 20.dp,
                             onClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                isSearchActive = !isSearchActive
-                                if (!isSearchActive) searchQuery = ""
+                                overflowMenuOpen = true
                             },
-                            modifier = Modifier.size(42.dp),
-                        ) {
-                            Icon(
-                                Icons.Filled.Search,
-                                contentDescription = stringResource(com.lastwave.app.R.string.pd_search_cd),
-                                tint = if (isSearchActive) MaterialTheme.colorScheme.primary else if (showScrolledHeader) MaterialTheme.colorScheme.onSurface else Color.White,
-                            )
-                        }
-                        Box {
-                            IconButton(
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                    overflowMenuOpen = true
-                                },
-                                modifier = Modifier.size(42.dp),
-                            ) {
-                                Icon(
-                                    Icons.Filled.MoreVert,
-                                    contentDescription = stringResource(com.lastwave.app.R.string.pd_options_cd),
-                                    tint = if (showScrolledHeader) MaterialTheme.colorScheme.onSurface else Color.White,
-                                )
-                            }
+                        )
 
                         DropdownMenu(
                             expanded = overflowMenuOpen,
@@ -1205,7 +1147,6 @@ fun PlaylistDetailScreen(
                             )
                         }
                     }
-                    }
                 }
             }
         }
@@ -1268,9 +1209,9 @@ fun PlaylistDetailScreen(
 
     // Cover Editor Dialog
     if (coverEditorOpen) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = { coverEditorOpen = false },
-            title = { Text(stringResource(com.lastwave.app.R.string.pl_cover_title)) },
+            title = stringResource(com.lastwave.app.R.string.pl_cover_title),
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -1285,33 +1226,36 @@ fun PlaylistDetailScreen(
                             stringResource(com.lastwave.app.R.string.pl_cover_custom_desc)
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = (if (LocalIsDarkTheme.current) Color.White else MaterialTheme.colorScheme.onSurface).copy(alpha = 0.75f),
                         textAlign = TextAlign.Center,
                     )
                 }
             },
             confirmButton = {
-                TextButton(
+                GlassButton(
+                    text = if (playlist.customCoverUri.isNullOrBlank()) stringResource(com.lastwave.app.R.string.pl_choose_image) else stringResource(com.lastwave.app.R.string.pl_change_image),
                     onClick = {
                         coverPickerPending = true
                         coverEditorOpen = false
                         coverPicker.launch(arrayOf("image/*"))
                     },
-                ) {
-                    Text(if (playlist.customCoverUri.isNullOrBlank()) stringResource(com.lastwave.app.R.string.pl_choose_image) else stringResource(com.lastwave.app.R.string.pl_change_image))
-                }
+                )
             },
             dismissButton = {
-                Row {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (!playlist.customCoverUri.isNullOrBlank()) {
-                        TextButton(
+                        GlassButton(
+                            text = stringResource(com.lastwave.app.R.string.pl_use_automatic),
                             onClick = {
                                 viewModel.setCustomCover(playlistId, null)
                                 coverEditorOpen = false
                             },
-                        ) { Text(stringResource(com.lastwave.app.R.string.pl_use_automatic)) }
+                        )
                     }
-                    TextButton(onClick = { coverEditorOpen = false }) { Text(stringResource(com.lastwave.app.R.string.common_done)) }
+                    GlassButton(
+                        text = stringResource(com.lastwave.app.R.string.common_done),
+                        onClick = { coverEditorOpen = false },
+                    )
                 }
             },
         )
@@ -1319,26 +1263,34 @@ fun PlaylistDetailScreen(
 
     // Delete confirmation dialog
     if (state.deleteConfirmForPlaylistId != null) {
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = viewModel::dismissDeleteConfirm,
-            title = { Text(stringResource(com.lastwave.app.R.string.pd_delete_title)) },
+            title = stringResource(com.lastwave.app.R.string.pd_delete_title),
             text = { Text(stringResource(com.lastwave.app.R.string.pd_delete_text, playlist.title)) },
             confirmButton = {
-                TextButton(onClick = {
-                    viewModel.confirmDelete()
-                    onBack()
-                }) { Text(stringResource(com.lastwave.app.R.string.common_delete), color = MaterialTheme.colorScheme.error) }
+                GlassButton(
+                    text = stringResource(com.lastwave.app.R.string.common_delete),
+                    onClick = {
+                        viewModel.confirmDelete()
+                        onBack()
+                    },
+                )
             },
-            dismissButton = { TextButton(onClick = viewModel::dismissDeleteConfirm) { Text(stringResource(com.lastwave.app.R.string.common_cancel)) } },
+            dismissButton = {
+                GlassButton(
+                    text = stringResource(com.lastwave.app.R.string.common_cancel),
+                    onClick = viewModel::dismissDeleteConfirm,
+                )
+            },
         )
     }
 
     // Rename dialog
     state.renamePlaylistId?.let { id ->
         var title by remember(id) { mutableStateOf(playlist.title) }
-        AlertDialog(
+        GlassDialog(
             onDismissRequest = viewModel::dismissRename,
-            title = { Text(stringResource(com.lastwave.app.R.string.pl_rename_title)) },
+            title = stringResource(com.lastwave.app.R.string.pl_rename_title),
             text = {
                 OutlinedTextField(
                     value = title,
@@ -1349,9 +1301,18 @@ fun PlaylistDetailScreen(
                 )
             },
             confirmButton = {
-                TextButton(onClick = { viewModel.renamePlaylist(title) }, enabled = title.isNotBlank()) { Text(stringResource(com.lastwave.app.R.string.common_save)) }
+                GlassButton(
+                    text = stringResource(com.lastwave.app.R.string.common_save),
+                    enabled = title.isNotBlank(),
+                    onClick = { viewModel.renamePlaylist(title) },
+                )
             },
-            dismissButton = { TextButton(onClick = viewModel::dismissRename) { Text(stringResource(com.lastwave.app.R.string.common_cancel)) } },
+            dismissButton = {
+                GlassButton(
+                    text = stringResource(com.lastwave.app.R.string.common_cancel),
+                    onClick = viewModel::dismissRename,
+                )
+            },
         )
     }
 

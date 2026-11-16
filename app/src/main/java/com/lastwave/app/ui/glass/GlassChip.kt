@@ -32,7 +32,7 @@ import com.lastwave.app.ui.theme.LocalIsDarkTheme
  */
 @Composable
 fun GlassChip(
-    selected: Boolean,
+    selected: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     shape: Shape = CircleShape,
@@ -88,7 +88,7 @@ fun GlassChip(
 @Composable
 fun GlassChip(
     text: String,
-    selected: Boolean,
+    selected: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
