@@ -1,6 +1,15 @@
 package com.lastwave.app.ui.settings.autoeq
 
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.glass.GlassButton
+import com.lastwave.app.ui.glass.GlassIconButton
+import com.lastwave.app.ui.glass.GlassSwitch
+import com.lastwave.app.ui.glass.GlassSlider
+import com.lastwave.app.ui.glass.GlassSegmentedControl
+import com.lastwave.app.ui.glass.GlassBottomSheet
+
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -102,7 +111,7 @@ fun AutoEqDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
             AutoEqScreen(
                 onBack = onDismiss,
                 onOpenGraphicEq = onOpenGraphicEq,
@@ -156,92 +165,36 @@ fun AutoEqScreen(
     ) {
         item {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 16.dp, top = 4.dp),
+                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 16.dp, top = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_close))
-                }
+                GlassIconButton(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.common_close),
+                    onClick = onBack,
+                )
+                Spacer(Modifier.width(12.dp))
                 Text(
                     stringResource(R.string.autoeq_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
+                    color = Color.White,
                     modifier = Modifier.weight(1f),
                 )
-                Switch(checked = enabled, onCheckedChange = viewModel::setEnabled)
+                GlassSwitch(checked = enabled, onCheckedChange = viewModel::setEnabled)
             }
             if (busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
         }
 
         if (onOpenGraphicEq != null) {
             item {
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                Icon(
-                                    Icons.Filled.Headphones,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(
-                                    "AutoEQ / PEQ",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                )
-                            }
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = Color.Transparent,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable(onClick = onOpenGraphicEq),
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                Icon(
-                                    Icons.Filled.GraphicEq,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(
-                                    "15-Band Graphic",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
+                Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                    GlassSegmentedControl(
+                        items = listOf("AutoEQ / PEQ", "15-Band Graphic"),
+                        selectedIndex = 0,
+                        onSelect = { if (it == 1) onOpenGraphicEq() },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         }
@@ -318,7 +271,7 @@ fun AutoEqScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f),
                     )
-                    Switch(checked = autoPerDevice, onCheckedChange = viewModel::setAutoPerDevice)
+                    GlassSwitch(checked = autoPerDevice, onCheckedChange = viewModel::setAutoPerDevice)
                 }
                 val current = device
                 if (current != null) {
@@ -370,12 +323,14 @@ private fun profileLabel(state: AutoEqState): String {
 
 @Composable
 private fun SectionCard(content: @Composable () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clearLiquidGlass(shape = RoundedCornerShape(24.dp), interactive = false)
+            .padding(16.dp),
     ) {
-        Column(Modifier.padding(16.dp)) { content() }
+        Column { content() }
     }
 }
 
@@ -542,10 +497,11 @@ private fun FilterRow(
     onChange: (PeqFilter) -> Unit,
     onDelete: () -> Unit,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clearLiquidGlass(shape = RoundedCornerShape(18.dp), interactive = false),
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(
@@ -559,7 +515,7 @@ private fun FilterRow(
                     color = if (filter.enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
                 )
-                Switch(checked = filter.enabled, onCheckedChange = { onChange(filter.copy(enabled = it)) })
+                GlassSwitch(checked = filter.enabled, onCheckedChange = { onChange(filter.copy(enabled = it)) })
                 Icon(
                     if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                     contentDescription = null,
@@ -774,7 +730,7 @@ private fun SearchSheet(viewModel: AutoEqViewModel, onDismiss: () -> Unit) {
     val indexState by viewModel.indexState.collectAsStateWithLifecycle()
     val busy by viewModel.busy.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.loadIndex() }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    GlassBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
             Text(stringResource(R.string.autoeq_search_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))

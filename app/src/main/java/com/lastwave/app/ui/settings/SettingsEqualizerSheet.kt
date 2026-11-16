@@ -1,6 +1,12 @@
 package com.lastwave.app.ui.settings
 
 import androidx.compose.material3.HorizontalDivider
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.glass.GlassBottomSheet
+import com.lastwave.app.ui.glass.GlassSegmentedControl
+import com.lastwave.app.ui.glass.GlassSwitch
+import com.lastwave.app.ui.glass.GlassChip
+import com.lastwave.app.ui.glass.GlassDialog
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -459,20 +465,9 @@ internal fun EqualizerSheet(
         )
     }
 
-    ModalBottomSheet(
+    GlassBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        dragHandle = {
-            Surface(
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 8.dp)
-                    .size(width = 36.dp, height = 4.dp),
-            ) {}
-        },
     ) {
         Column(
             modifier = Modifier
@@ -536,97 +531,33 @@ internal fun EqualizerSheet(
             }
 
             // Mode Switcher: 15-Band Graphic vs AutoEQ / Parametric EQ
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            GlassSegmentedControl(
+                items = listOf("15-Band Graphic", "AutoEQ / PEQ"),
+                selectedIndex = 0,
+                onSelect = { if (it == 1) onOpenAutoEq() },
                 modifier = Modifier.fillMaxWidth(),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            Icon(
-                                Icons.Filled.GraphicEq,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(16.dp),
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "15-Band Graphic",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                        }
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.Transparent,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable(onClick = {
-                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-                                onOpenAutoEq()
-                            }),
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            Icon(
-                                Icons.Filled.Headphones,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp),
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "AutoEQ / PEQ",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                }
-            }
+            )
 
             // Master On/Off Switch Card
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                tonalElevation = 2.dp,
-                modifier = Modifier.fillMaxWidth(),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clearLiquidGlass(shape = RoundedCornerShape(20.dp), interactive = false),
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.set_eq_enable), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.set_eq_enable), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = Color.White)
                         Text(
                             if (eq.enabled) "Shaping your music in real-time" else "Off \u2014 original audio passes through",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = Color.White.copy(alpha = 0.65f),
                             maxLines = 2,
                         )
                     }
-                    Switch(
+                    GlassSwitch(
                         checked = eq.enabled,
                         onCheckedChange = { enabled ->
                             haptic.performHapticFeedback(if (enabled) androidx.compose.ui.hapticfeedback.HapticFeedbackType.ToggleOn else androidx.compose.ui.hapticfeedback.HapticFeedbackType.ToggleOff)
@@ -650,17 +581,17 @@ internal fun EqualizerSheet(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 EqualizerPresets.ALL.forEach { preset ->
-                    FilterChip(
+                    GlassChip(
                         selected = eq.presetName.equals(preset.name, ignoreCase = true),
                         onClick = {
                             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.ContextClick)
                             onPickPreset(preset.name)
                         },
-                        label = { Text(preset.name, style = MaterialTheme.typography.labelMedium) },
+                        label = preset.name,
                     )
                 }
                 if (eq.presetName == EqualizerPresets.CUSTOM_NAME) {
-                    FilterChip(selected = true, onClick = {}, label = { Text(stringResource(R.string.set_eq_custom), style = MaterialTheme.typography.labelMedium) })
+                    GlassChip(selected = true, onClick = {}, label = stringResource(R.string.set_eq_custom))
                 }
             }
 
@@ -673,31 +604,21 @@ internal fun EqualizerSheet(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 eq.userPresets.forEach { preset ->
-                    FilterChip(
+                    GlassChip(
                         selected = eq.presetName == preset.name,
                         onClick = {
                             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.ContextClick)
                             onPickPreset(preset.name)
                         },
-                        label = { Text(preset.name, style = MaterialTheme.typography.labelMedium) },
+                        label = preset.name,
                     )
                 }
-                androidx.compose.material3.AssistChip(
+                GlassChip(
+                    selected = false,
                     enabled = canSaveMore,
                     onClick = { nameDialogFor = "" },
-                    leadingIcon = {
-                        androidx.compose.material3.Icon(
-                            androidx.compose.material.icons.Icons.Filled.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    },
-                    label = {
-                        Text(
-                            if (canSaveMore) "Save as preset" else "Limit of ${com.lastwave.app.data.local.MAX_USER_EQ_PRESETS} reached",
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    },
+                    icon = Icons.Filled.Add,
+                    label = if (canSaveMore) "Save as preset" else "Limit reached",
                 )
             }
             if (eq.isUserPreset(eq.presetName)) {
@@ -727,10 +648,10 @@ internal fun EqualizerSheet(
                 )
             }
             deleteConfirmFor?.let { name ->
-                androidx.compose.material3.AlertDialog(
+                GlassDialog(
                     onDismissRequest = { deleteConfirmFor = null },
-                    title = { Text("Delete “$name”?") },
-                    text = { Text("The sound keeps playing as Custom until you pick another preset.") },
+                    title = "Delete “$name”?",
+                    text = { Text("The sound keeps playing as Custom until you pick another preset.", color = Color.White.copy(alpha = 0.85f)) },
                     confirmButton = {
                         androidx.compose.material3.TextButton(onClick = {
                             onDeletePreset(name)
@@ -738,17 +659,16 @@ internal fun EqualizerSheet(
                         }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
                     },
                     dismissButton = {
-                        androidx.compose.material3.TextButton(onClick = { deleteConfirmFor = null }) { Text("Cancel") }
+                        androidx.compose.material3.TextButton(onClick = { deleteConfirmFor = null }) { Text("Cancel", color = Color.White) }
                     },
                 )
             }
 
             // Native Equalizer Fader Board
-            Surface(
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                tonalElevation = 2.dp,
-                modifier = Modifier.fillMaxWidth(),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clearLiquidGlass(shape = RoundedCornerShape(24.dp), interactive = false),
             ) {
                 val curveAlpha by animateFloatAsState(
                     targetValue = if (eq.enabled) 1f else 0.38f,
@@ -845,9 +765,9 @@ private fun EqPresetNameDialog(
         mutableStateOf(renaming ?: com.lastwave.app.data.local.nextEqPresetName(eq))
     }
     val problem = com.lastwave.app.data.local.eqPresetNameProblem(name, eq, renaming)
-    androidx.compose.material3.AlertDialog(
+    GlassDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (renaming == null) "Save preset" else "Rename preset") },
+        title = if (renaming == null) "Save preset" else "Rename preset",
         text = {
             androidx.compose.material3.OutlinedTextField(
                 value = name,
@@ -856,16 +776,17 @@ private fun EqPresetNameDialog(
                 label = { Text("Name") },
                 isError = problem != null,
                 supportingText = { problem?.let { Text(it) } },
+                modifier = Modifier.fillMaxWidth(),
             )
         },
         confirmButton = {
             androidx.compose.material3.TextButton(
                 enabled = problem == null,
                 onClick = { onConfirm(com.lastwave.app.data.local.cleanEqPresetName(name)) },
-            ) { Text(if (renaming == null) "Save" else "Rename") }
+            ) { Text(if (renaming == null) "Save" else "Rename", color = MaterialTheme.colorScheme.primary) }
         },
         dismissButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancel") }
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancel", color = Color.White) }
         },
     )
 }
@@ -900,27 +821,31 @@ internal fun EqNativeSlider(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Numeric Gain on top in a small pill container
-        Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = when {
-                !enabled -> MaterialTheme.colorScheme.surfaceContainer
-                gainDb > 0f -> MaterialTheme.colorScheme.primaryContainer
-                gainDb < 0f -> MaterialTheme.colorScheme.tertiaryContainer
-                else -> MaterialTheme.colorScheme.surfaceContainerHighest
-            },
+        Box(
+            modifier = Modifier
+                .clearLiquidGlass(
+                    shape = RoundedCornerShape(8.dp),
+                    interactive = false,
+                    tintColor = when {
+                        !enabled -> null
+                        gainDb > 0f -> MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                        gainDb < 0f -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.25f)
+                        else -> null
+                    },
+                )
+                .padding(horizontal = 6.dp, vertical = 2.dp),
         ) {
             Text(
                 text = if (gainDb > 0f) "+${"%.1f".format(gainDb)}" else "${"%.1f".format(gainDb)}",
                 fontSize = 11.sp,
                 fontWeight = if (gainDb != 0f) FontWeight.Bold else FontWeight.Medium,
                 color = when {
-                    !enabled -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    gainDb > 0f -> MaterialTheme.colorScheme.onPrimaryContainer
-                    gainDb < 0f -> MaterialTheme.colorScheme.onTertiaryContainer
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    !enabled -> Color.White.copy(alpha = 0.4f)
+                    gainDb > 0f -> MaterialTheme.colorScheme.primary
+                    gainDb < 0f -> MaterialTheme.colorScheme.tertiary
+                    else -> Color.White.copy(alpha = 0.85f)
                 },
                 maxLines = 1,
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
             )
         }
 
@@ -935,8 +860,7 @@ internal fun EqNativeSlider(
             modifier = Modifier
                 .width(44.dp)
                 .height(trackHeight)
-                .clip(RoundedCornerShape(22.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .clearLiquidGlass(shape = RoundedCornerShape(22.dp), interactive = false)
                 .pointerInput(enabled) {
                     if (!enabled) return@pointerInput
                     detectVerticalDragGestures(
@@ -1025,11 +949,12 @@ internal fun EqNativeSlider(
                     .graphicsLayer {
                         val maxTravel = (trackHeight - thumbHeight).toPx()
                         translationY = maxTravel * (1f - normalized)
+                        scaleY = if (isDragging) 1.08f else 1.0f
                     }
-                    .shadow(if (isDragging) 8.dp else 3.dp, RoundedCornerShape(12.dp))
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                    .clearLiquidGlass(
+                        shape = RoundedCornerShape(12.dp),
+                        interactive = isDragging,
+                        tintColor = if (enabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f) else null,
                     ),
                 contentAlignment = Alignment.Center,
             ) {

@@ -1,6 +1,10 @@
 package com.lastwave.app.ui.settings
 
 import androidx.compose.material3.HorizontalDivider
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.glass.GlassSlider
+import com.lastwave.app.ui.glass.GlassSwitch
+import com.lastwave.app.ui.glass.GlassChip
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -289,15 +293,11 @@ internal fun CrossfadeDurationRow(
         else -> "Extended cinematic crossfade"
     }
 
-    Card(
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isHighlighted) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .settingHighlightGlow(isHighlighted = isHighlighted, shape = shape),
+            .settingHighlightGlow(isHighlighted = isHighlighted, shape = shape)
+            .clearLiquidGlass(shape = shape, interactive = false),
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -308,27 +308,28 @@ internal fun CrossfadeDurationRow(
                 )
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.set_xfade_dur), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.set_xfade_dur), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = Color.White)
                     Text(
                         "${sliderValue.roundToInt()}s \u2022 $blendStyle",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color.White.copy(alpha = 0.65f),
                     )
                 }
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                Box(
+                    modifier = Modifier
+                        .clearLiquidGlass(shape = RoundedCornerShape(8.dp), interactive = false, tintColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
                 ) {
                     Text(
                         "${sliderValue.roundToInt()}s",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
-            Slider(
+            Spacer(Modifier.height(8.dp))
+            GlassSlider(
                 value = sliderValue,
                 onValueChange = { value ->
                     isDragging = true
@@ -343,18 +344,18 @@ internal fun CrossfadeDurationRow(
                     isDragging = false
                 },
                 valueRange = 1f..12f,
-                steps = 10,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp),
             )
+            Spacer(Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(stringResource(R.string.set_xfade_1), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
-                Text(stringResource(R.string.set_xfade_6), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
-                Text(stringResource(R.string.set_xfade_12), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                Text(stringResource(R.string.set_xfade_1), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.50f))
+                Text(stringResource(R.string.set_xfade_6), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.50f))
+                Text(stringResource(R.string.set_xfade_12), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.50f))
             }
         }
     }
@@ -393,13 +394,10 @@ internal fun AutoMixControlsCard(
         "${sliderValue.roundToInt()}s \u2022 Custom DJ blend"
     }
 
-    Card(
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = Modifier.fillMaxWidth(),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clearLiquidGlass(shape = shape, interactive = false),
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp)) {
             Row(
@@ -411,30 +409,31 @@ internal fun AutoMixControlsCard(
                         "Transition Duration",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
+                        color = Color.White,
                     )
                     Text(
                         durationDesc,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color.White.copy(alpha = 0.65f),
                     )
                 }
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                Box(
+                    modifier = Modifier
+                        .clearLiquidGlass(shape = RoundedCornerShape(8.dp), interactive = false, tintColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
                 ) {
                     Text(
                         text = displayValue,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
 
             Spacer(Modifier.height(10.dp))
 
-            Slider(
+            GlassSlider(
                 value = sliderValue,
                 onValueChange = { value ->
                     isDragging = true
@@ -470,21 +469,21 @@ internal fun AutoMixControlsCard(
                     }
                 },
                 valueRange = 11f..30f,
-                steps = 18,
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            Spacer(Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text("Auto", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
-                Text("20s", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
-                Text("30s", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                Text("Auto", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.50f))
+                Text("20s", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.50f))
+                Text("30s", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.50f))
             }
 
             Spacer(Modifier.height(12.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
             Spacer(Modifier.height(12.dp))
 
             Row(
@@ -499,10 +498,10 @@ internal fun AutoMixControlsCard(
                 )
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("DJ Spectral Filter Sweeps", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                    Text("3-band Linkwitz-Riley sub-bass swap and resonant filter sweeps", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("DJ Spectral Filter Sweeps", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = Color.White)
+                    Text("3-band Linkwitz-Riley sub-bass swap and resonant filter sweeps", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.65f))
                 }
-                Switch(
+                GlassSwitch(
                     checked = settings.spectralFilterSweepsEnabled,
                     onCheckedChange = onSpectralSweepsChange,
                 )
@@ -525,31 +524,29 @@ internal fun MusicHapticsControlsCard(
 ) {
     val shape = groupShape(position)
 
-    Card(
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = Modifier.fillMaxWidth(),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clearLiquidGlass(shape = shape, interactive = false),
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp)) {
             if (isUsbExclusiveActive) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
-                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .clearLiquidGlass(shape = RoundedCornerShape(12.dp), interactive = false, tintColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f))
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Icon(Icons.Filled.Info, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Filled.Info, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                         Text(
                             text = "Paused while Bit-Perfect USB DAC bypass is active",
                             style = MaterialTheme.typography.bodySmall,
+                            color = Color.White,
                         )
                     }
                 }
@@ -568,16 +565,10 @@ internal fun MusicHapticsControlsCard(
             ) {
                 MusicHapticsMode.entries.forEach { mode ->
                     val isSelected = config.mode == mode
-                    FilterChip(
+                    GlassChip(
                         selected = isSelected,
                         onClick = { onModeChange(mode) },
-                        label = {
-                            Text(
-                                mode.label,
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            )
-                        },
+                        label = mode.label,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -585,11 +576,11 @@ internal fun MusicHapticsControlsCard(
             Text(
                 text = config.mode.subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.65f),
                 modifier = Modifier.padding(top = 6.dp, bottom = 12.dp),
             )
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
             Spacer(Modifier.height(12.dp))
 
             // 2. Intensity Segmented Button Chips
@@ -605,16 +596,10 @@ internal fun MusicHapticsControlsCard(
             ) {
                 MusicHapticsIntensity.entries.forEach { intensity ->
                     val isSelected = config.intensity == intensity
-                    FilterChip(
+                    GlassChip(
                         selected = isSelected,
                         onClick = { onIntensityChange(intensity) },
-                        label = {
-                            Text(
-                                intensity.label,
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            )
-                        },
+                        label = intensity.label,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -626,11 +611,11 @@ internal fun MusicHapticsControlsCard(
                     MusicHapticsIntensity.STRONG -> "Full 100% kick for heavy bass drops & transients"
                 },
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.65f),
                 modifier = Modifier.padding(top = 6.dp, bottom = 12.dp),
             )
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
             Spacer(Modifier.height(12.dp))
 
             // 3. Engine Routing Selector
@@ -647,20 +632,14 @@ internal fun MusicHapticsControlsCard(
                 MusicHapticsEngineMode.entries.forEach { engine ->
                     val isSelected = config.engineMode == engine
                     val isEnabled = engine != MusicHapticsEngineMode.HARDWARE_NATIVE || isHardwareAvailable
-                    FilterChip(
+                    GlassChip(
                         selected = isSelected,
                         enabled = isEnabled,
                         onClick = { onEngineModeChange(engine) },
-                        label = {
-                            Text(
-                                when (engine) {
-                                    MusicHapticsEngineMode.AUTO -> "Auto"
-                                    MusicHapticsEngineMode.DSP_PRECISION -> "DSP"
-                                    MusicHapticsEngineMode.HARDWARE_NATIVE -> "Hardware"
-                                },
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            )
+                        label = when (engine) {
+                            MusicHapticsEngineMode.AUTO -> "Auto"
+                            MusicHapticsEngineMode.DSP_PRECISION -> "DSP"
+                            MusicHapticsEngineMode.HARDWARE_NATIVE -> "Hardware"
                         },
                         modifier = Modifier.weight(1f),
                     )
@@ -674,11 +653,11 @@ internal fun MusicHapticsControlsCard(
             Text(
                 text = engineDesc,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.65f),
                 modifier = Modifier.padding(top = 6.dp, bottom = 12.dp),
             )
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
             Spacer(Modifier.height(12.dp))
 
             // 4. Battery Saver Toggle
@@ -692,14 +671,15 @@ internal fun MusicHapticsControlsCard(
                         "Pause on Battery Saver",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
+                        color = Color.White,
                     )
                     Text(
                         "Preserves battery when Android Power Saver is active",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color.White.copy(alpha = 0.65f),
                     )
                 }
-                Switch(
+                GlassSwitch(
                     checked = config.pauseOnBatterySaver,
                     onCheckedChange = onBatterySaverChange,
                 )

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -117,3 +120,30 @@ fun GlassChip(
         )
     }
 }
+
+@Composable
+fun GlassChip(
+    selected: Boolean = false,
+    onClick: () -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    icon: ImageVector? = null,
+    leadingIcon: (@Composable () -> Unit)? = null,
+) = GlassChip(
+    text = label,
+    selected = selected,
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    leadingIcon = leadingIcon ?: icon?.let { ic ->
+        {
+            Icon(
+                imageVector = ic,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = if (selected) Color.White else Color.White.copy(alpha = 0.85f),
+            )
+        }
+    },
+)

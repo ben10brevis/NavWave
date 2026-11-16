@@ -1,6 +1,8 @@
 package com.lastwave.app.ui.settings
 
 import androidx.compose.material3.HorizontalDivider
+import com.lastwave.app.ui.glass.clearLiquidGlass
+import com.lastwave.app.ui.glass.GlassSwitch
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -398,13 +400,7 @@ internal fun SettingsToggleCard(
         onCheckedChange(value)
     }
 
-    Card(
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isHighlighted) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceContainerHigh,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
@@ -413,10 +409,14 @@ internal fun SettingsToggleCard(
                 scaleY = s
             }
             .settingHighlightGlow(isHighlighted = isHighlighted, shape = shape)
-            .clip(shape)
+            .clearLiquidGlass(
+                shape = shape,
+                interactive = enabled,
+                tintColor = if (isHighlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.20f) else null,
+            )
             .combinedClickable(
                 interactionSource = interactionSource,
-                indication = androidx.compose.material3.ripple(),
+                indication = null,
                 enabled = enabled,
                 onClick = { onCheckedChange(!checked) },
                 onLongClick = {
@@ -453,19 +453,10 @@ internal fun SettingsToggleCard(
                 )
             }
             Spacer(Modifier.width(8.dp))
-            Switch(
+            GlassSwitch(
                 checked = checked,
                 enabled = enabled,
-                onCheckedChange = if (enabled) onCheckedChange else null,
-                thumbContent = if (checked) {
-                    {
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                        )
-                    }
-                } else null,
+                onCheckedChange = if (enabled) onCheckedChange else { _ -> },
             )
         }
     }
@@ -495,13 +486,7 @@ internal fun SettingsToggleCard(
         onCheckedChange(value)
     }
 
-    Card(
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isHighlighted) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceContainerHigh,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
@@ -510,10 +495,14 @@ internal fun SettingsToggleCard(
                 scaleY = s
             }
             .settingHighlightGlow(isHighlighted = isHighlighted, shape = shape)
-            .clip(shape)
+            .clearLiquidGlass(
+                shape = shape,
+                interactive = enabled,
+                tintColor = if (isHighlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.20f) else null,
+            )
             .combinedClickable(
                 interactionSource = interactionSource,
-                indication = androidx.compose.material3.ripple(),
+                indication = null,
                 enabled = enabled,
                 onClick = { onCheckedChange(!checked) },
                 onLongClick = {
@@ -550,19 +539,10 @@ internal fun SettingsToggleCard(
                 )
             }
             Spacer(Modifier.width(8.dp))
-            Switch(
+            GlassSwitch(
                 checked = checked,
                 enabled = enabled,
-                onCheckedChange = if (enabled) onCheckedChange else null,
-                thumbContent = if (checked) {
-                    {
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                        )
-                    }
-                } else null,
+                onCheckedChange = if (enabled) onCheckedChange else { _ -> },
             )
         }
     }
@@ -585,21 +565,25 @@ internal fun SettingsActionCard(
     val titleColor = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
     val shape = groupShape(position)
 
-    Card(
-        onClick = onClick,
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isHighlighted) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        interactionSource = interactionSource,
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
-            .settingHighlightGlow(isHighlighted = isHighlighted, shape = shape),
+            .settingHighlightGlow(isHighlighted = isHighlighted, shape = shape)
+            .clearLiquidGlass(
+                shape = shape,
+                interactive = true,
+                tintColor = if (isHighlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
+                else if (danger) MaterialTheme.colorScheme.error.copy(alpha = 0.15f) else null,
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
     ) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
