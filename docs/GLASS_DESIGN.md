@@ -154,7 +154,18 @@ A built-in interactive calibration suite allows real-time tuning of the optical 
 
 ---
 
-## 7. Release Build Configuration
+## 7. Performance & 120 FPS Rendering Architecture
+
+To guarantee 120 FPS buttery-smooth scrolling on high-refresh Android displays:
+1. **`drawWithCache` Optical Pipeline:** Specular rim gradient brushes, strokes, and squircle paths are allocated only when container size changes, preventing thousands of garbage-collection allocations per second during scroll.
+2. **Selective Ambient Shadows (`hasShadow = false`):** List rows and grouping containers skip `Modifier.shadow()`, completely avoiding excess RenderNode allocations inside `LazyColumn`.
+3. **Decoupled Gesture Layer (`interactive = false`):** Passive scroll rows do not bind custom multi-touch gesture listeners, eliminating touch-slop latency.
+4. **Draw-Phase Dynamic Backgrounds (`drawBehind`):** Animated mesh gradients compute animated phase offsets exclusively in the draw pass, eliminating recomposition loops.
+5. **High-Contrast Obsidian Glass for Modals (`isSheet = true`):** Bottom sheets and menus employ an obsidian glass foundation (`Color(0xFF141418).copy(alpha = 0.88f)`) with a 72% dark scrim and top specular sheen, ensuring complete legibility over busy underlying content while preserving rim light aesthetics.
+
+---
+
+## 8. Release Build Configuration
 
 To build an optimized production release APK with R8 minification and resource shrinking:
 
