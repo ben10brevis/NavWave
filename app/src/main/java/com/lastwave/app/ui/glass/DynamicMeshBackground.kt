@@ -124,7 +124,7 @@ fun DynamicMeshBackground(
                 ),
                 radius = r1,
                 center = Offset(b1X, b1Y),
-                blendMode = if (isDark) BlendMode.Plus else BlendMode.SrcOver,
+                blendMode = BlendMode.SrcOver,
             )
 
             // Blob 2: Lower-right counter-drifting orbit
@@ -143,7 +143,7 @@ fun DynamicMeshBackground(
                 ),
                 radius = r2,
                 center = Offset(b2X, b2Y),
-                blendMode = if (isDark) BlendMode.Plus else BlendMode.SrcOver,
+                blendMode = BlendMode.SrcOver,
             )
 
             // Blob 3: Center-floating accent
@@ -161,7 +161,7 @@ fun DynamicMeshBackground(
                 ),
                 radius = r3,
                 center = Offset(b3X, b3Y),
-                blendMode = if (isDark) BlendMode.Plus else BlendMode.SrcOver,
+                blendMode = BlendMode.SrcOver,
             )
         }
 

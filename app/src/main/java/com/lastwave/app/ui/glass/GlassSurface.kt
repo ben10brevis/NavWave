@@ -141,7 +141,7 @@ fun safeGlassShape(shape: Shape): Shape =
  */
 @Composable
 fun Modifier.clearLiquidGlass(
-    backdrop: Backdrop? = LocalLiquidGlassBackdrop.current,
+    backdrop: Backdrop? = null,
     shape: Shape = RoundedCornerShape(28.dp),
     isSheet: Boolean = false,
     interactive: Boolean = true,
@@ -211,23 +211,32 @@ fun Modifier.clearLiquidGlass(
             shape = { resolvedShape },
             highlight = { Highlight.Default },
             effects = {
-                // Layer 1: Saturation 1.6x + Brightness 1.05x + Blur
-                colorControls(
-                    brightness = params.brightness - 1f,
-                    contrast = 1f,
-                    saturation = params.saturation,
-                )
-                blur(with(density) { blurRadius.toPx() })
+                // Layer 1: Saturation 1.6x + Brightness 1.05x + Blur (Android 12+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    runCatching {
+                        colorControls(
+                            brightness = params.brightness - 1f,
+                            contrast = 1f,
+                            saturation = params.saturation,
+                        )
+                        blur(with(density) { blurRadius.toPx() })
+                    }
+                }
 
-                // Layer 2: Edge refraction lens (Tier A only)
-                if (tier == GlassTier.TierA) {
-                    val lensHeight = (size.minDimension * params.refraction).coerceAtMost(24f)
-                    val lensAmount = (size.minDimension * 0.35f)
-                    lens(lensHeight, lensAmount, false)
+                // Layer 2: Edge refraction lens (Tier A only, Android 13+)
+                if (tier == GlassTier.TierA && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    val minDim = size.minDimension
+                    if (minDim > 4f) {
+                        val lensHeight = (minDim * params.refraction).coerceIn(1f, 24f)
+                        val lensAmount = (minDim * 0.35f).coerceAtLeast(1f)
+                        runCatching {
+                            lens(lensHeight, lensAmount, false)
+                        }
+                    }
                 }
             },
             onDrawBackdrop = { drawBackdrop ->
-                drawBackdrop()
+                runCatching { drawBackdrop() }
             },
             onDrawSurface = {
                 val press = interactionState?.pressProgress ?: 0f
@@ -269,7 +278,7 @@ fun Modifier.clearLiquidGlass(
                         center = Offset(sheenCenterX, sheenCenterY),
                         radius = size.maxDimension * 0.85f,
                     ),
-                    blendMode = BlendMode.Plus,
+                    blendMode = BlendMode.SrcOver,
                 )
             },
         )

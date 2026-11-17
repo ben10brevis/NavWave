@@ -158,6 +158,7 @@ fun LastWaveTheme(
                     defaultFontResolver
                 }
             }
+            val glassTier = com.lastwave.app.ui.glass.rememberAutoGlassTier()
             CompositionLocalProvider(
                 LocalFontFamilyResolver provides fontResolver,
                 LocalHapticFeedback provides appHaptics,
@@ -166,6 +167,7 @@ fun LastWaveTheme(
                 LocalHideNavTabs provides themeState.hideNavTabs,
                 LocalUseBoldFont provides themeState.useBoldFont,
                 LocalIsDarkTheme provides isDark,
+                com.lastwave.app.ui.glass.LocalGlassTier provides glassTier,
             ) {
                 content()
             }

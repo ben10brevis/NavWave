@@ -585,6 +585,7 @@ fun MainShell(
                                     .widthIn(max = 420.dp)
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp),
+                                backdrop = if (navGlass) navigationBackdrop else null,
                             )
                         }
                     }

@@ -46,6 +46,9 @@ import androidx.compose.ui.unit.sp
 import com.lastwave.app.ui.theme.LocalIsDarkTheme
 import kotlin.math.roundToInt
 
+import com.kyant.backdrop.Backdrop
+import androidx.compose.ui.draw.clip
+
 data class GlassTabItem(
     val title: String,
     val selectedIcon: ImageVector,
@@ -63,6 +66,7 @@ fun GlassBottomTabBar(
     selectedIndex: Int,
     onSelectTab: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    backdrop: Backdrop? = null,
 ) {
     if (items.isEmpty()) return
 
@@ -79,6 +83,7 @@ fun GlassBottomTabBar(
         modifier = modifier
             .height(64.dp)
             .clearLiquidGlass(
+                backdrop = backdrop,
                 shape = CircleShape,
                 interactive = false,
                 customBlurDp = 14.dp,
@@ -106,11 +111,7 @@ fun GlassBottomTabBar(
                     scaleX = stretchX
                     scaleY = squashY
                 }
-                .clearLiquidGlass(
-                    shape = CircleShape,
-                    interactive = false,
-                    customBlurDp = 8.dp,
-                )
+                .clip(CircleShape)
                 .background(
                     if (isDark) Color.White.copy(alpha = 0.16f) else Color.Black.copy(alpha = 0.08f),
                     CircleShape,

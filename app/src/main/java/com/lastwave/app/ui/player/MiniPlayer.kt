@@ -469,6 +469,7 @@ internal fun MiniPlayer(
             modifier = Modifier
                 .fillMaxWidth()
                 .clearLiquidGlass(
+                    backdrop = backdrop,
                     shape = glassShape,
                     customBlurDp = 14.dp,
                     tintColor = artworkTint,

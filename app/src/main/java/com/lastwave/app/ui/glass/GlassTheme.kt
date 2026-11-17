@@ -43,7 +43,11 @@ data class GlassParams(
     val ambientShadowAlpha: Float = 0.18f,
 )
 
-val LocalGlassTier = staticCompositionLocalOf { GlassTier.TierA }
+val LocalGlassTier = staticCompositionLocalOf {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) GlassTier.TierA
+    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) GlassTier.TierB
+    else GlassTier.TierC
+}
 val LocalGlassParams = compositionLocalOf { GlassParams() }
 val LocalDeviceTilt = compositionLocalOf { Offset.Zero }
 
@@ -67,14 +71,12 @@ fun rememberAutoGlassTier(): GlassTier {
             Settings.Global.getInt(context.contentResolver, "accessibility_reduce_transparency", 0) != 0
         }.getOrDefault(false)
 
-        if (isLowRam || isPowerSave || reduceTransparency) {
+        if (isLowRam || isPowerSave || reduceTransparency || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             GlassTier.TierC
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             GlassTier.TierA
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            GlassTier.TierB
         } else {
-            GlassTier.TierC
+            GlassTier.TierB
         }
     }
 }
