@@ -37,14 +37,14 @@ fun GlassBottomSheet(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val isDark = LocalIsDarkTheme.current
-    val handleColor = if (isDark) Color.White.copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.25f)
+    val handleColor = if (isDark) Color.White.copy(alpha = 0.40f) else Color.Black.copy(alpha = 0.30f)
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
         containerColor = Color.Transparent,
-        scrimColor = Color.Black.copy(alpha = 0.45f),
+        scrimColor = Color.Black.copy(alpha = 0.72f),
         dragHandle = null,
         modifier = modifier,
     ) {
@@ -54,6 +54,7 @@ fun GlassBottomSheet(
                 .clearLiquidGlass(
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                     isSheet = true,
+                    customBlurDp = 28.dp,
                     interactive = false,
                 )
                 .navigationBarsPadding()
@@ -67,7 +68,7 @@ fun GlassBottomSheet(
                 Spacer(Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
-                        .size(width = 36.dp, height = 4.dp)
+                        .size(width = 40.dp, height = 4.5.dp)
                         .background(handleColor, CircleShape)
                 )
                 Spacer(Modifier.height(16.dp))

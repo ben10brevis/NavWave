@@ -70,8 +70,8 @@ fun GlassListRow(
             .defaultMinSize(minHeight = 56.dp)
             .clearLiquidGlass(
                 shape = shape,
-                interactive = enabled,
-                interactionState = if (enabled) interactionState else null,
+                interactive = false,
+                hasShadow = false,
                 customBlurDp = 8.dp,
             )
             .clickable(

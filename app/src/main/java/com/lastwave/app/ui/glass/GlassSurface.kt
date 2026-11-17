@@ -24,7 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -146,6 +146,7 @@ fun Modifier.clearLiquidGlass(
     isSheet: Boolean = false,
     interactive: Boolean = true,
     enableStretch: Boolean = false,
+    hasShadow: Boolean = !isSheet,
     customBlurDp: Dp? = null,
     tintColor: Color? = null,
     interactionState: GlassInteractionState? = if (interactive) rememberGlassInteractionState() else null,
@@ -159,14 +160,16 @@ fun Modifier.clearLiquidGlass(
     val blurRadius = customBlurDp ?: (if (isSheet) params.sheetBlurDp.dp else params.blurDp.dp)
     val resolvedShape = safeGlassShape(shape)
 
-    // Layer 6: Soft ambient drop shadow
-    val shadowModifier = Modifier.shadow(
-        elevation = 8.dp,
-        shape = shape,
-        clip = false,
-        ambientColor = Color.Black.copy(alpha = params.ambientShadowAlpha),
-        spotColor = Color.Black.copy(alpha = params.ambientShadowAlpha * 0.8f),
-    )
+    // Layer 6: Soft ambient drop shadow (only for cards/floating sheets)
+    val shadowModifier = if (hasShadow) {
+        Modifier.shadow(
+            elevation = if (isSheet) 16.dp else 8.dp,
+            shape = shape,
+            clip = false,
+            ambientColor = Color.Black.copy(alpha = if (isSheet) 0.35f else params.ambientShadowAlpha),
+            spotColor = Color.Black.copy(alpha = if (isSheet) 0.30f else params.ambientShadowAlpha * 0.8f),
+        )
+    } else Modifier
 
     // Interactive scale & liquid stretch
     val interactiveTransformModifier = if (interactionState != null) {
@@ -180,25 +183,32 @@ fun Modifier.clearLiquidGlass(
         }
     } else Modifier
 
+    // High-contrast, crystal-clear obsidian glass base for modal sheets / dialogs / menus
+    val resolvedBaseColor = if (isSheet) {
+        if (isDark) Color(0xFF141418).copy(alpha = 0.88f)
+        else Color(0xFFF6F6FA).copy(alpha = 0.92f)
+    } else {
+        tintColor ?: if (isDark) {
+            Color.White.copy(alpha = params.tintAlpha + 0.04f)
+        } else {
+            Color.Black.copy(alpha = params.tintAlpha + 0.02f)
+        }
+    }
+
     // Tier C or No Backdrop Fallback: Translucent Tint + Specular Rim Light
     if (tier == GlassTier.TierC || backdrop == null) {
         return this
             .then(shadowModifier)
             .then(interactiveTransformModifier)
             .clip(shape)
-            .background(
-                if (isDark) {
-                    Color.White.copy(alpha = params.tintAlpha + 0.04f)
-                } else {
-                    Color.Black.copy(alpha = params.tintAlpha + 0.02f)
-                }
-            )
+            .background(resolvedBaseColor)
             .drawGlassRimAndSheen(
                 shape = shape,
                 isDark = isDark,
                 params = params,
                 tilt = tilt,
                 pressProgress = interactionState?.pressProgress ?: 0f,
+                isSheet = isSheet,
             )
     }
 
@@ -242,16 +252,22 @@ fun Modifier.clearLiquidGlass(
                 val press = interactionState?.pressProgress ?: 0f
 
                 // Layer 3: Tint (White 6% dark / Black 4% light with subtle gradient, or artwork tint)
-                val baseTint = tintColor ?: if (isDark) Color.White else Color.Black
-                val effectiveAlpha = if (tintColor != null) {
+                val baseTint = if (isSheet) {
+                    if (isDark) Color(0xFF141418) else Color(0xFFF6F6FA)
+                } else {
+                    tintColor ?: if (isDark) Color.White else Color.Black
+                }
+                val effectiveAlpha = if (isSheet) {
+                    0.86f
+                } else if (tintColor != null) {
                     (0.12f + press * 0.04f).coerceIn(0.04f, 0.25f)
                 } else {
                     (params.tintAlpha + press * 0.04f).coerceIn(0.02f, 0.20f)
                 }
                 drawRect(
                     brush = Brush.verticalGradient(
-                        0f to baseTint.copy(alpha = effectiveAlpha * 1.35f),
-                        1f to baseTint.copy(alpha = effectiveAlpha * 0.70f),
+                        0f to baseTint.copy(alpha = effectiveAlpha * 1.15f),
+                        1f to baseTint.copy(alpha = effectiveAlpha * 0.85f),
                     )
                 )
 
@@ -288,12 +304,13 @@ fun Modifier.clearLiquidGlass(
             params = params,
             tilt = tilt,
             pressProgress = interactionState?.pressProgress ?: 0f,
+            isSheet = isSheet,
         )
 }
 
 /**
- * Layer 4: Specular Rim Light: 1dp gradient stroke
- * White 55% top-left fading to 5% mid-edge to 35% bottom-right.
+ * Layer 4: Specular Rim Light: 1.2-1.5dp gradient stroke cached with drawWithCache
+ * White 60% top-left fading to 8% mid-edge to 38% bottom-right.
  */
 private fun Modifier.drawGlassRimAndSheen(
     shape: Shape,
@@ -301,27 +318,40 @@ private fun Modifier.drawGlassRimAndSheen(
     params: GlassParams,
     tilt: Offset,
     pressProgress: Float,
-): Modifier = this.drawWithContent {
-    drawContent()
-
-    // 1dp specular rim gradient
-    val strokeWidth = 1.dp.toPx()
+    isSheet: Boolean = false,
+): Modifier = this.drawWithCache {
+    val strokeWidth = (if (isSheet) 1.5.dp else 1.2.dp).toPx()
     val rimAlpha = (params.rimLightAlpha + pressProgress * 0.25f).coerceIn(0.1f, 1f)
 
     val rimBrush = Brush.linearGradient(
-        0f to Color.White.copy(alpha = 0.55f * rimAlpha),
-        0.5f to Color.White.copy(alpha = 0.06f * rimAlpha),
-        1f to Color.White.copy(alpha = 0.35f * rimAlpha),
+        0f to Color.White.copy(alpha = (if (isSheet) 0.65f else 0.58f) * rimAlpha),
+        0.5f to Color.White.copy(alpha = 0.08f * rimAlpha),
+        1f to Color.White.copy(alpha = (if (isSheet) 0.40f else 0.36f) * rimAlpha),
         start = Offset(0f, 0f),
         end = Offset(size.width, size.height),
     )
 
     val outline = shape.createOutline(size, layoutDirection, this)
-    drawOutline(
-        outline = outline,
-        brush = rimBrush,
-        style = Stroke(width = strokeWidth),
+    val stroke = Stroke(width = strokeWidth)
+
+    val topSheenBrush = Brush.verticalGradient(
+        0f to Color.White.copy(alpha = if (isDark) 0.18f else 0.26f),
+        0.35f to Color.Transparent,
     )
+
+    onDrawWithContent {
+        drawContent()
+
+        if (isSheet) {
+            drawRect(topSheenBrush, size = Size(size.width, size.height * 0.35f))
+        }
+
+        drawOutline(
+            outline = outline,
+            brush = rimBrush,
+            style = stroke,
+        )
+    }
 }
 
 /**

@@ -257,7 +257,8 @@ fun ExpressiveGroupRow(
             }
             .clearLiquidGlass(
                 shape = shape,
-                interactive = true,
+                interactive = false,
+                hasShadow = false,
             )
             .clickable(
                 interactionSource = interactionSource,

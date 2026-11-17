@@ -4,6 +4,7 @@ import com.lastwave.app.ui.glass.clearLiquidGlass
 import com.lastwave.app.ui.glass.GlassBottomSheet
 import com.lastwave.app.ui.glass.GlassDialog
 import com.lastwave.app.ui.glass.GlassBasicDialog
+import com.lastwave.app.ui.theme.LocalIsDarkTheme
 
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.filled.Add
@@ -1027,6 +1028,10 @@ private fun MenuActionRow(
     val badgeContentColor = if (danger) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
     val shape = groupShape(position)
 
+    val isDark = LocalIsDarkTheme.current
+    val rowTint = if (danger) MaterialTheme.colorScheme.error.copy(alpha = 0.22f)
+                  else (if (isDark) Color(0xFF222228).copy(alpha = 0.82f) else Color(0xFFE8E8EE).copy(alpha = 0.88f))
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -1036,8 +1041,9 @@ private fun MenuActionRow(
             }
             .clearLiquidGlass(
                 shape = shape,
-                interactive = true,
-                tintColor = if (danger) MaterialTheme.colorScheme.error.copy(alpha = 0.15f) else null,
+                interactive = false,
+                hasShadow = false,
+                tintColor = rowTint,
             )
             .clickable(
                 interactionSource = interactionSource,
@@ -1062,6 +1068,7 @@ private fun MenuActionRow(
             Text(
                 label,
                 style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
                 color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -1079,10 +1086,12 @@ private fun MenuInfoRow(
     onClick: (() -> Unit)? = null,
 ) {
     val shape = groupShape(position)
+    val isDark = LocalIsDarkTheme.current
+    val rowBg = if (isDark) Color(0xFF222228).copy(alpha = 0.82f) else Color(0xFFE8E8EE).copy(alpha = 0.88f)
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clearLiquidGlass(shape = shape, interactive = onClick != null)
+            .clearLiquidGlass(shape = shape, interactive = false, hasShadow = false, tintColor = rowBg)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
         Row(

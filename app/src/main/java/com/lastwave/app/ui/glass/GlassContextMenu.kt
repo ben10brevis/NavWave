@@ -75,7 +75,8 @@ fun GlassContextMenu(
                 .widthIn(min = 200.dp, max = 280.dp)
                 .clearLiquidGlass(
                     shape = RoundedCornerShape(24.dp),
-                    isSheet = false,
+                    isSheet = true,
+                    hasShadow = true,
                     interactive = false,
                 )
                 .padding(vertical = 8.dp),

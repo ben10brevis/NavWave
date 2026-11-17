@@ -12,6 +12,8 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
@@ -68,27 +70,23 @@ object ExpressiveMotion {
     // Legacy alias
     fun <T> smoothSpring() = effectsDefault<T>()
 
-    // Screen transitions in the same language as the player open/close
-    // morph: the incoming screen grows into place from slightly smaller while
-    // the one it covers recedes a touch; going back reverses it. A short
-    // horizontal drift keeps the forward/back direction readable.
+    // Screen transitions: Spotify/iOS Clear Liquid Glass spec
+    // Fade-through with subtle 12dp upward shift (~350ms interruptible springs)
     fun forwardEnter(): EnterTransition =
-        fadeIn(effectsDefault()) +
-            scaleIn(spatialDefault(), initialScale = 0.92f) +
-            slideInHorizontally(spatialDefault()) { it / 24 }
+        fadeIn(spring(dampingRatio = 0.85f, stiffness = 420f)) +
+            slideInVertically(spring(dampingRatio = 0.85f, stiffness = 420f)) { 36 }
 
     fun forwardExit(): ExitTransition =
-        fadeOut(effectsDefault()) +
-            scaleOut(effectsDefault(), targetScale = 0.95f)
+        fadeOut(spring(dampingRatio = 0.90f, stiffness = 500f)) +
+            slideOutVertically(spring(dampingRatio = 0.90f, stiffness = 500f)) { -24 }
 
     fun backEnter(): EnterTransition =
-        fadeIn(effectsDefault()) +
-            scaleIn(spatialDefault(), initialScale = 0.95f)
+        fadeIn(spring(dampingRatio = 0.85f, stiffness = 420f)) +
+            slideInVertically(spring(dampingRatio = 0.85f, stiffness = 420f)) { -24 }
 
     fun backExit(): ExitTransition =
-        fadeOut(effectsFast()) +
-            scaleOut(effectsDefault(), targetScale = 0.92f) +
-            slideOutHorizontally(spatialDefault()) { it / 24 }
+        fadeOut(spring(dampingRatio = 0.90f, stiffness = 500f)) +
+            slideOutVertically(spring(dampingRatio = 0.90f, stiffness = 500f)) { 36 }
 }
 
 /**
