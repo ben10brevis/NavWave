@@ -176,7 +176,7 @@ fun LastWaveJamSheet(
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
-                                text = "LastWave Jam",
+                                text = "NavWave Jam",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                             )

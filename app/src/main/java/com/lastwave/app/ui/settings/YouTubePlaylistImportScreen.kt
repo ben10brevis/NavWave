@@ -473,7 +473,7 @@ fun YouTubePlaylistImportScreen(
                                     fontWeight = FontWeight.Bold,
                                 )
                                 Text(
-                                    "Paste any YouTube or YouTube Music playlist URL. LastWave resolves every track — no 100-song cap, full playlists import completely.",
+                                    "Paste any YouTube or YouTube Music playlist URL. NavWave resolves every track — no 100-song cap, full playlists import completely.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )

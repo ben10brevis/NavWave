@@ -595,35 +595,26 @@ internal fun AboutCard(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            Modifier.fillMaxWidth().padding(vertical = 28.dp, horizontal = 20.dp),
+            Modifier.fillMaxWidth().padding(vertical = 32.dp, horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
                 Modifier
-                    .size(72.dp)
+                    .size(76.dp)
                     .clip(CircleShape)
-                    // The launcher icon is an <adaptive-icon> XML on API 26+
-                    // (mipmap-anydpi-v26/ic_launcher_round.xml) — Compose's
-                    // painterResource() can only parse plain bitmap/vector
-                    // drawables, not that root element, and throws the
-                    // instant this composable enters composition. Rebuilding
-                    // the same mark from its two real layers (the lime
-                    // background color + the bars vector, both plain
-                    // resources) reproduces it exactly without touching the
-                    // adaptive icon resource at all.
                     .background(colorResource(appIcon.backgroundRes)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(appIcon.logoRes),
-                    contentDescription = "LastWave",
+                    contentDescription = "NavWave",
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(72.dp),
+                    modifier = Modifier.size(76.dp),
                 )
             }
-            Spacer(Modifier.height(14.dp))
-            Text("LastWave", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
+            Text("NavWave", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(10.dp))
             Surface(
                 shape = ExpressivePillShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -644,50 +635,33 @@ internal fun AboutCard(
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 7.dp),
                 )
             }
-            Spacer(Modifier.height(12.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(R.string.about_made_by),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.width(6.dp))
-                Image(
-                    painter = painterResource(R.drawable.ic_flag_india),
-                    contentDescription = "India",
-                )
-            }
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(20.dp))
             Surface(
                 shape = ExpressivePillShape,
-                color = MaterialTheme.colorScheme.secondaryContainer,
+                color = Color(0xFF229ED9),
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Clash-Projects/LastWave-Desktop"))
-                    if (!startActivitySafely(context, intent)) {
-                        android.widget.Toast.makeText(context, context.getString(R.string.toast_no_browser_plain), android.widget.Toast.LENGTH_SHORT).show()
-                    }
+                    openTelegramChannel(context, "navvoratelugu")
                 },
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Download,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "Telegram",
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.White,
                     )
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(10.dp))
                     Text(
-                        text = stringResource(R.string.settings_desktop_app),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        text = "Telegram: t.me/navvoratelugu",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
                     )
                 }
             }

@@ -258,7 +258,7 @@ object SettingsSearchIndex {
                 SettingsEntry(
                     id = "audio.stop_on_recents",
                     title = "Stop Playback When Swiped Away",
-                    subtitle = "Stop music when LastWave is removed from Recents",
+                    subtitle = "Stop music when NavWave is removed from Recents",
                     keywords = listOf(
                         "recents", "swipe", "swipe away", "stop playback", "background playback",
                         "continue playing", "task removed", "kill app", "close app"
@@ -480,7 +480,7 @@ object SettingsSearchIndex {
             add(
                 SettingsEntry(
                     id = "appearance.lastwave_theme",
-                    title = "LastWave Signature Theme",
+                    title = "NavWave Signature Theme",
                     subtitle = "Bespoke logo palette with Electric Lime and Obsidian Teal",
                     keywords = listOf(
                         "lastwave theme", "brand theme", "special theme", "logo theme", "lime",
@@ -962,7 +962,7 @@ object SettingsSearchIndex {
                 SettingsEntry(
                     id = "youtube.shown_playlists",
                     title = "Show / Hide Account Playlists",
-                    subtitle = "Control which playlists from your YouTube account appear in LastWave",
+                    subtitle = "Control which playlists from your YouTube account appear in NavWave",
                     keywords = listOf(
                         "show playlists", "hide playlists", "visibility", "account playlists",
                         "library visibility", "filter playlists"
@@ -1315,7 +1315,7 @@ object SettingsSearchIndex {
                 SettingsEntry(
                     id = "backup.restore",
                     title = "Restore from Backup",
-                    subtitle = "Import a previously saved LastWave backup file to restore settings & playlists",
+                    subtitle = "Import a previously saved NavWave backup file to restore settings & playlists",
                     keywords = listOf(
                         "restore", "import backup", "recover data", "load backup", "restore playlists",
                         "restore settings", "json restore"
@@ -1434,50 +1434,15 @@ object SettingsSearchIndex {
             )
             add(
                 SettingsEntry(
-                    id = "about.check_updates",
-                    title = "Check for Updates",
-                    subtitle = "Check GitHub releases for the latest version and changelog",
+                    id = "about.telegram",
+                    title = "Telegram Channel",
+                    subtitle = "Join our Telegram community at t.me/navvoratelugu",
                     keywords = listOf(
-                        "update", "check updates", "new version", "github releases", "changelog",
-                        "download update", "latest release", "upgrade"
+                        "telegram", "channel", "community", "support", "chat", "navvoratelugu"
                     ),
-                    icon = Icons.Filled.CloudDownload,
-                    iconContainer = { MaterialTheme.colorScheme.primaryContainer },
-                    iconTint = { MaterialTheme.colorScheme.onPrimaryContainer },
-                    parentTab = SettingsTab.ABOUT,
-                    section = "About & Community",
-                    type = EntryType.ACTION,
-                )
-            )
-            add(
-                SettingsEntry(
-                    id = "about.source_code",
-                    title = "Open Source Code",
-                    subtitle = "View repository at github.com/Clash-Projects/LastWave-native",
-                    keywords = listOf(
-                        "source code", "github", "open source", "repository", "gpl", "license",
-                        "contribute", "git"
-                    ),
-                    icon = Icons.Filled.Code,
-                    iconContainer = { MaterialTheme.colorScheme.secondaryContainer },
-                    iconTint = { MaterialTheme.colorScheme.onSecondaryContainer },
-                    parentTab = SettingsTab.ABOUT,
-                    section = "About & Community",
-                    type = EntryType.ACTION,
-                )
-            )
-            add(
-                SettingsEntry(
-                    id = "about.desktop_app",
-                    title = "Download Desktop App",
-                    subtitle = "View repository at github.com/Clash-Projects/LastWave-Desktop",
-                    keywords = listOf(
-                        "desktop", "pc", "windows", "mac", "linux", "electron", "github", "clash-projects",
-                        "download"
-                    ),
-                    icon = Icons.Filled.Download,
-                    iconContainer = { MaterialTheme.colorScheme.secondaryContainer },
-                    iconTint = { MaterialTheme.colorScheme.onSecondaryContainer },
+                    icon = Icons.AutoMirrored.Filled.Send,
+                    iconContainer = { Color(0xFF229ED9) },
+                    iconTint = { Color.White },
                     parentTab = SettingsTab.ABOUT,
                     section = "About & Community",
                     type = EntryType.ACTION,

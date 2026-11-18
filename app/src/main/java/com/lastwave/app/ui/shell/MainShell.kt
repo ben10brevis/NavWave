@@ -1141,7 +1141,7 @@ private fun JoinSupportDialog(
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "LastWave Discord",
+                                text = "NavWave Discord",
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface,
