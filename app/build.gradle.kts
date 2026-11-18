@@ -540,7 +540,7 @@ dependencies {
     testImplementation("com.google.truth:truth:1.4.5")
     testImplementation("org.robolectric:robolectric:4.12.2")
     testImplementation("io.mockk:mockk:1.13.10")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
     testImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
